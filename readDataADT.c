@@ -1,9 +1,4 @@
 #include "readDataADT.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
-
 
 
 typedef struct excelData{
@@ -17,9 +12,8 @@ struct readDataCDT{
     size_t rows;
 };
 
-static void * reallocMem(void * target, size_t spaces, int * flag);
+
 static char * copyRow(FILE * fp, size_t maxleght, int * flag);
-static char * copyString(char * s, size_t * len, int * flag);
 static tData * separeteRow(char * row, size_t maxLenght, int * flag);
 static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag);
 
@@ -100,26 +94,7 @@ static char * copyRow(FILE * fp, size_t maxleght, int * flag){
 }
 
 #define BLOCK_COLUMN 5 
-#define BLOCK_STR 20
 
-static char * copyString(char * s, size_t * len, int * flag){
-	char * rta = NULL;
-	int i;
-	for(i=0; s[i] != '\n' && s[i] != '\0'; i++){
-		if(i%BLOCK_STR == 0){
-			rta = realloc(rta, i+BLOCK_STR);
-            if(rta == NULL){
-                *flag = NO_MEMORY;
-                return NULL;
-            }
-		}
-		rta[i] = s[i];
-	}
-	rta = realloc(rta, i+1); // No deberia fallar ya que se achica el string. (Checkear con la madre tierra).
-    rta[i] = 0;
-	*len = i;
-	return rta;
-}
 static tData * separeteRow(char * row, size_t maxLenght, int * flag){
     tData * ans=NULL;
     char * token;
@@ -183,7 +158,7 @@ static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_
     
     return rta;
 }
-static void * reallocMem(void * target, size_t spaces, int * flag){
+/*static void * reallocMem(void * target, size_t spaces, int * flag){
       void * ptr = realloc(target, spaces);
       if(ptr == NULL){
             free(target);
@@ -193,3 +168,25 @@ static void * reallocMem(void * target, size_t spaces, int * flag){
       *flag = OK;
       return ptr;
 }
+
+#define BLOCK_STR 20
+
+static char * copyString(char * s, size_t * len, int * flag){
+	char * rta = NULL;
+	int i;
+	for(i=0; s[i] != '\n' && s[i] != '\0'; i++){
+		if(i%BLOCK_STR == 0){
+			rta = realloc(rta, i+BLOCK_STR);
+            if(rta == NULL){
+                *flag = NO_MEMORY;
+                return NULL;
+            }
+		}
+		rta[i] = s[i];
+	}
+	rta = realloc(rta, i+1); // No deberia fallar ya que se achica el string. (Checkear con la madre tierra).
+    rta[i] = 0;
+	*len = i;
+	return rta;
+}
+*/

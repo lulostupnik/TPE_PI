@@ -1,8 +1,10 @@
 #include "errores.h"
+#include "misc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+
 
 #ifndef _READEXCELTABLES_H
 #define _READEXCELTABLES_H

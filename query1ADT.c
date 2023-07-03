@@ -15,9 +15,11 @@ struct query1CDT{
     tList firstTrip;
     tList iteratorTrip;
     tList firstId;
-  
+    readDataADT stationExcel;
+    readDataADT bikesExcel;
 };
 
+static int addTrip(query1ADT q1, size_t stationId);
 
 void printTrips(query1ADT q1){
     for(tList l = q1->firstId; l!=NULL; l=l->tail){
@@ -25,24 +27,48 @@ void printTrips(query1ADT q1){
     }
 }
 
-
-void printTrips2(query1ADT q1){
-    for(tList l = q1->firstId; l!=NULL; l=l->tail){
-        printf("Station id: %ld, cantTrips %ld, NAME: %s\n", l->stationId, l->cantTrips, l->name);
-    }
-}
-
-
-query1ADT newQuery1(int * flag){
+query1ADT newQuery1(readDataADT bikesExcel, readDataADT stationExcel,int * flag){
     query1ADT ans = calloc(1, sizeof(*ans));
     if(ans == NULL){
         *flag = NO_MEMORY;
     }else{
         *flag = 0;
     }
+    ans->bikesExcel = bikesExcel;
+    ans->stationExcel = stationExcel;
     return ans;
 }
 
+int processDataQ1(query1ADT q1, size_t stationIdCol){
+    int flag;
+    int * flagPtr = &flag;
+    size_t colsBikes = getDimColsExcel(q1->bikesExcel, flagPtr);
+    if(flag != OK){
+        return flag;
+    }
+    char rowsBikes = getDimRowsExcel(q1->bikesExcel, flagPtr);
+    if(flag != OK){
+        return flag;
+    }
+   
+    //Agrego todos lo viajes
+    char * aux;
+    for(int i=1; i<rowsBikes-1; i++){
+        aux = getDataFromPos(q1->bikesExcel, i, stationIdCol, &flag);
+        if(flag != OK){
+            //free de los addtrip y eso
+            free(aux);
+            return flag;
+        }
+        flag = addTrip(q1, atoi(aux));
+        free(aux);
+        if(flag != OK){
+            return flag;
+        }
+    }
+   
+    return flag;
+}
 
 static tList addTripRec(tList list, size_t stationId, int * flag){
     if(list == NULL || stationId < list->stationId){
@@ -67,16 +93,40 @@ static tList addTripRec(tList list, size_t stationId, int * flag){
 
 
 
-int addTrip(query1ADT q1, size_t stationId){
+static int addTrip(query1ADT q1, size_t stationId){
     if(q1 == NULL){
         return NULL_POINTER;
     }
     int flag = 0;
+  
     q1->firstId = addTripRec(q1->firstId, stationId, &flag);
     return flag;
 }
 
-int addName(query1ADT q1, char * name, size_t len, size_t stationId){ 
+
+int addNamesFromVec(query1ADT q1, char ** vec, size_t dim){
+    int flag = 0;
+  
+    for(tList l= q1->firstId;l!= NULL; l=l->tail){
+            if(l->name == NULL){
+                if(l->stationId >= dim){
+                    //
+                    return INVALID_ID;
+                }
+                l->name = copyString(vec[l->stationId], &l->len, &flag);
+                if(flag != OK){
+                    //cosas
+                     return flag;
+                }
+            }else{
+                // cosas !
+                return ALREADY_ADDED;
+            }
+        }
+    return OK;
+}
+
+int addNameList(query1ADT q1, char * name, size_t len, size_t stationId){ 
     if(q1 == NULL){
         return NULL_POINTER;
     }
@@ -122,11 +172,16 @@ static tList addListRec(tList list, char * name, size_t len, size_t cantTrips, i
 
 
 int orderByCantTrip(query1ADT q1){
-    int flag = 0;
+    int flag = OK;
     for(tList l= q1->firstId;l!= NULL; l=l->tail){
         q1->firstTrip =addListRec(q1->firstTrip, l->name, l->len, l->cantTrips, &flag); // asumo que ya se agrego el nombre y la len
-        free(l);
+        if(flag == NO_MEMORY){
+            //agregar
+            return NO_MEMORY;
+        }
+        //free(l);
     }
+    return flag;
 }
 
 
