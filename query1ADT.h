@@ -1,16 +1,18 @@
-#ifndef _QUERY1ADT_H
-#define _QUERY1ADT_H
-
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include "errores.h"
+
+#ifndef _QUERY1ADT_H
+#define _QUERY1ADT_H
+
 
 typedef struct query1CDT * query1ADT;
 
-typedef enum {OK = 0,NULL_POINTER, ENOMEM, INVALID_ID, ALREADY_ADDED} errors;
+
 
 void printTrips(query1ADT q1);
-
+void printTrips2(query1ADT q1);
 
 query1ADT newQuery1(int * flag);
 int addTrip(query1ADT q1, size_t stationId);

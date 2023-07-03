@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include <errno.h>
+
 
 
 typedef struct excelData{
@@ -12,51 +12,21 @@ typedef struct excelData{
 }tData;
 
 struct readDataCDT{
-    tData * dataVec;
+    tData * dataVec; // pseudo-matrix
     size_t cols;
     size_t rows;
 };
 
 static void * reallocMem(void * target, size_t spaces, int * flag);
-
-static void * reallocMem(void * target, size_t spaces, int * flag){
-      void * ptr = realloc(target, spaces);
-      if(ptr == NULL){
-            free(target);
-            *flag = NO_MEMORY;
-            return NULL;
-      }
-      *flag = OK;
-      return ptr;
-}
-
-//hay que hacer validacion aca, o queda en el user?
-size_t getDimRowsExcel(readDataADT data){
-    return data->rows;
-}
-size_t getDimColsExcel(readDataADT data){
-    return data->cols;
-}
-char * getDataFromPos(readDataADT data, size_t row, size_t col, int * flag){
-    *flag = OK;
-    if (row >= data->rows || col >= data->cols) {
-        *flag = INVALID_POSITION;
-        return NULL;
-    }
-    char * ans = reallocMem(NULL, data->dataVec[row * data->cols+col].len+1, flag);
-    if(ans == NULL){
-        *flag = NO_MEMORY;
-        return NULL;
-    }
- 
-    return strcpy(ans, data->dataVec[row*data->cols+col].string);
-}
-
-
+static char * copyRow(FILE * fp, size_t maxleght, int * flag);
+static char * copyString(char * s, size_t * len, int * flag);
+static tData * separeteRow(char * row, size_t maxLenght, int * flag);
+static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag);
 
 
 
 readDataADT newRead(char * tablePath, size_t * columnsToCopy , size_t dimColumns, size_t maxLenght, int * flag){
+    *flag = OK;
     readDataADT ans = reallocMem(NULL, sizeof(struct readDataCDT), flag);
    
     if(*flag == NO_MEMORY){
@@ -81,6 +51,42 @@ readDataADT newRead(char * tablePath, size_t * columnsToCopy , size_t dimColumns
     fclose(fp);
     return ans;
 }
+
+
+
+//hay que hacer validacion aca, o queda en el user?
+size_t getDimRowsExcel(readDataADT data, int * flag){
+    if(data == NULL){
+        *flag = NULL_POINTER;
+    }
+    *flag = OK;
+    return data->rows;
+}
+size_t getDimColsExcel(readDataADT data, int * flag){
+    if(data == NULL){
+        *flag = NULL_POINTER;
+    }
+    *flag = OK;
+    return data->cols;
+}
+char * getDataFromPos(readDataADT data, size_t row, size_t col, int * flag){
+    *flag = OK;
+    if (row >= data->rows || col >= data->cols) {
+        *flag = INVALID_POSITION;
+        return NULL;
+    }
+    char * ans = reallocMem(NULL, data->dataVec[row * data->cols+col].len+1, flag);
+    if(ans == NULL){
+        *flag = NO_MEMORY;
+        return NULL;
+    }
+ 
+    return strcpy(ans, data->dataVec[row*data->cols+col].string);
+}
+
+
+
+
 
 
 
@@ -114,10 +120,6 @@ static char * copyString(char * s, size_t * len, int * flag){
 	*len = i;
 	return rta;
 }
-
-
-
-
 static tData * separeteRow(char * row, size_t maxLenght, int * flag){
     tData * ans=NULL;
     char * token;
@@ -143,8 +145,7 @@ static tData * separeteRow(char * row, size_t maxLenght, int * flag){
     }
     return ans;
 }
-
-tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag){
+static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag){
     tData * rta = NULL;
     *flag = OK;
     char * aux;
@@ -182,5 +183,13 @@ tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVe
     
     return rta;
 }
-
-
+static void * reallocMem(void * target, size_t spaces, int * flag){
+      void * ptr = realloc(target, spaces);
+      if(ptr == NULL){
+            free(target);
+            *flag = NO_MEMORY;
+            return NULL;
+      }
+      *flag = OK;
+      return ptr;
+}

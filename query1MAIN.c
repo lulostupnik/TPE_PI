@@ -6,8 +6,8 @@
 int main(){
     int flag;
     //En realidad, el Q1 no tienee que abrir los excel, sino que recibir el ADT del excel abierto
-    readExcelTablesADT excel1 = newRead("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/test.csv",&flag);
-    readExcelTablesADT excelStations = newRead("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/testStations.csv",&flag);
+    readExcelTablesADT excel1 = newRead("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/bikesMON.csv",&flag);
+    readExcelTablesADT excelStations = newRead("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/stationsMON.csv",&flag);
     printf("FLAG %d\n", flag);
     query1ADT q1 = newQuery1(&flag);
     
@@ -49,15 +49,21 @@ int main(){
 
     printf("Cols station %ld, rows station %d \n", colsStation, rowsStation);
 
+    int flag1, flag2, i;
 
     //LA funcion getData me esta fallando as que no puedo probar si Add Name, orderByCant trip y las iteradores sirve. Aiuda
-    for(int i=1; i<rows-1; i++){
-        auxName = getDataFromPos(excelStations, i, 1, &flag); 
-        auxStationId = getDataFromPos(excelStations, i, 0, &flag);
-        printf("Name:%s  id: %d\n", auxName, atoi(auxStationId));
-       // addName(q1, auxName, strlen(auxName), atoi(auxStationId));
+    for(i=1; i<rowsStation-1; i++){
+        auxName = getDataFromPos(excelStations, i, 1, &flag1); 
+        auxStationId = getDataFromPos(excelStations, i, 0, &flag2);
+        printf("Name:%s id: %d \n", auxName,atoi(auxStationId));
+        addName(q1, auxName, strlen(auxName), atoi(auxStationId));
     }
-    /*
+    printf("\n\n");
+    printTrips2(q1);
+    printf("\n\n");
+
+
+    
     orderByCantTrip(q1);
     toBegin(q1);
     char * name;
@@ -69,6 +75,6 @@ int main(){
 
     //faltan frees
     freeExcelData(excel1);
-    freeExcelData(excelStations);*/
+    freeExcelData(excelStations);
 
 }
