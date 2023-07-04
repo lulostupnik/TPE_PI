@@ -17,7 +17,7 @@ void * reallocMem(void * target, size_t spaces, int * flag){
 char * copyString(char * s, size_t * len, int * flag){
 	char * rta = NULL;
 	int i;
-	for(i=0; s[i] != '\n' && s[i] != '\0'; i++){
+	for(i=0; s[i] != '\r' && s[i] != '\n' && s[i] != '\0'; i++){
 		if(i%BLOCK_STR == 0){
 			rta = realloc(rta, i+BLOCK_STR);
             if(rta == NULL){

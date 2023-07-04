@@ -12,9 +12,9 @@ struct node{
 typedef struct node * tList;
 
 struct query1CDT{
-    tList firstTrip;
+    tList firstTrip; // lista en donde ordeno por la cantidad de viajes (descendente)
     tList iteratorTrip;
-    tList firstId;
+    tList firstId; // lista en donde ordeno por Ids y le sumo la cantidad de viajes que hay 
     readDataADT stationExcel;
     readDataADT bikesExcel;
 };
@@ -49,12 +49,14 @@ query1ADT newQuery1(readDataADT bikesExcel, readDataADT stationExcel,int * flag)
     return ans;
 }
 
-int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t stationNameCol){
-    int flag = processCantTrips(q1, bikesIdCol);
+int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t stationNameCol, size_t isMemberCol, cmpMember cmp){
+    int flag = processCantTrips(q1, bikesIdCol, isMemberCol, cmp);
     if(flag != OK){
         //cosas
         return flag;
     }
+
+    //Voy a agregar los nombres a la lista
     int rowsStation = getDimRowsExcel(q1->stationExcel, &flag);
     if(flag != OK){
         //cosas
@@ -83,34 +85,50 @@ int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t s
     return OK;
 }
 
-int processCantTrips(query1ADT q1, size_t bikesIdCol){
+static int count;
+
+int processCantTrips(query1ADT q1, size_t bikesIdCol, size_t isMemberCol, cmpMember cmp){
     int flag = OK;
     int * flagPtr = &flag;
-    /*size_t colsBikes = getDimColsExcel(q1->bikesExcel, flagPtr);
-    if(flag != OK){
-        return flag;
-    }*/
+ 
     size_t rowsBikes = getDimRowsExcel(q1->bikesExcel, flagPtr);
     if(flag != OK){
         return flag;
     }
    
     //Agrego todos lo viajes
-    char * aux;
+    char * auxId, * auxMember;
     for(int i=1; i<rowsBikes; i++){
-        aux = getDataFromPos(q1->bikesExcel, i, bikesIdCol, &flag);
+      
+        auxMember = getDataFromPos(q1->bikesExcel, i, isMemberCol, &flag);
        
         if(flag != OK){
             //free de los addtrip y eso
-            free(aux);
+            free(auxMember);
             return flag;
         }
-        flag = addTrip(q1, atoi(aux));
-        free(aux);
-        if(flag != OK){
-            return flag;
+        if(cmp(auxMember)){
+            auxId = getDataFromPos(q1->bikesExcel, i, bikesIdCol, &flag);
+            if(flag != OK){
+            //free de los addtrip y eso
+                free(auxId);
+                free(auxMember);
+                return flag;
+            }
+            flag = addTrip(q1, atoi(auxId));
+            if(flag != OK){
+                free(auxId);
+                free(auxMember);
+                return flag;
+            }
+            free(auxId);
+        }else{
+            count++;
         }
+     
+        free(auxMember);  
     }
+    printf("\nnon member %d\n", count);
    
     return flag;
 }
@@ -230,7 +248,7 @@ int orderByCantTrip(query1ADT q1){
             //se hubiera accedido a NULL en el strcmp
             return NULL_POINTER;
         }
-        q1->firstTrip =addListRec(q1->firstTrip, l->name, l->len, l->stationId, l->cantTrips, &flag); // asumo que ya se agrego el nombre y la len
+        q1->firstTrip = addListRec(q1->firstTrip, l->name, l->len, l->stationId, l->cantTrips, &flag); // asumo que ya se agrego el nombre y la len
         
         if(flag == NO_MEMORY){
             //agregar

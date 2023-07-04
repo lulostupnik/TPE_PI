@@ -141,22 +141,27 @@ static tData * separeteRow(char * row, size_t maxLenght, int * flag){
     }
     return ans;
 }
-static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag){
+static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag){ // generar Matriz
     tData * rta = NULL;
     *flag = OK;
     char * aux;
     tData * separetedRow = NULL;
     *dimRows = 0;
+
     while((aux = copyRow(fp, maxLenght, flag)) != NULL){
            if(*flag == NO_MEMORY){ // del copyRow
                 // liberar recursos del for. 
                 return NULL;
            }
-           separetedRow = separeteRow(aux, maxLenght, flag);
+
+           separetedRow = separeteRow(aux, maxLenght, flag); // separa las columnas de una fila
            if(*flag == NO_MEMORY){
             //lpm
             return NULL;
            }
+
+     
+
            rta = reallocMem(rta, sizeof(tData) * dimVecColumns *(*dimRows+1), flag);
            if(*flag == NO_MEMORY){
             //putra
@@ -164,13 +169,18 @@ static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_
            }
            
            for(int j=0; j < dimVecColumns;j++){
+
+                rta[*dimRows * dimVecColumns + j ].string = separetedRow[columnsToCopy[j]].string;
+                rta[*dimRows * dimVecColumns + j ].len = separetedRow[columnsToCopy[j]].len; 
+                /*
+                Esto es al pedo, daba memory leaks o tenia que liberar cada elemento de separatedRows 
                 rta[*dimRows * dimVecColumns+j].string = malloc(separetedRow[columnsToCopy[j]].len + 1);
                 rta[*dimRows * dimVecColumns+j].len = separetedRow[columnsToCopy[j]].len;
                 if(rta[*dimRows * dimVecColumns+j].string == NULL){
                     //posta matame
                     return NULL;
                 }
-                strcpy(rta[*dimRows * dimVecColumns+j].string, separetedRow[columnsToCopy[j]].string);
+                strcpy(rta[*dimRows * dimVecColumns+j].string, separetedRow[columnsToCopy[j]].string);*/
            }
            (*dimRows)++;
            free(aux);

@@ -60,6 +60,12 @@ static char ** getVecNames(readDataADT stationsExcel, int * dim,size_t dimRowsSt
 }
 
 
+int cmp(char * mem){
+    if(strcmp(mem, "1") == 0){
+        return 1;
+    }
+    return 0;
+}
 
 int main(int argc, char * argv[]){
     int flag;
@@ -105,15 +111,26 @@ int main(int argc, char * argv[]){
         return flag;
     }
     
-    /*flag = processDataQ1(q1,1, 0, 1);
+    int isMemCol = getNewColIdx(bikesExcel,IS_MEMBER, &flag);
+    if(flag != OK){
+        /////
+        return flag; 
+    } 
+    
+    
+    char * s = getDataFromPos(bikesExcel, 1, isMemCol, &flag);
+
+    flag = processDataQ1(q1,1, 0, 1, isMemCol, cmp);
      if(flag != OK){
         //
         return flag;
-    }*/
+    }
 
   
    //Manera alternativa de procesar (da invalid ID...)
-   flag = processCantTrips(q1, 1); 
+    //printMatrix(bikesExcel);
+
+   /*flag = processCantTrips(q1, 1, isMemCol, cmp); 
     if(flag != OK){
         //
         return flag;
@@ -129,10 +146,10 @@ int main(int argc, char * argv[]){
     if(flag != OK){
         //
         return flag;
-    }
+    }*/
     
 
-
+   // printTripsID(q1);
 
     //Ya puedo iterar
     toBegin(q1);
@@ -146,6 +163,7 @@ int main(int argc, char * argv[]){
         //funciones HTML
         printf("In iterator: %s, %ld\n", name, cantTrips);
     }
+   printf("cant trips%d vs cols %d", i, getDimRowsExcel(bikesExcel, &flag) );
    
 
 
