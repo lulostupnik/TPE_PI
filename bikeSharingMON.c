@@ -100,35 +100,37 @@ int main(int argc, char * argv[]){
         //
         return flag;
     }
-   flag = processDataQ1(q1, 1); // emplancement cambia a 1 capaz
+    flag = processDataQ1(q1,1, 0, 1);// NO me entra al toBeguin aca pero el resto da igual
+   
+   
+   /* 
+   //Manera alternativa de procesar
+   flag = processCantTrips(q1, 1); 
     if(flag != OK){
         //
         return flag;
     }
-    
     flag = addNamesFromVec(q1, vecNames, maxId);
     if(flag != OK){
         //
         return flag;
     }
-    //NECESARIAMENTE HAY QUE AGREGAR LOS NOMBRES ANTES DE ORDENAR, sino hay seg FAULT!
+    //NECESARIAMENTE HAY QUE AGREGAR LOS NOMBRES ANTES DE ORDENAR. Sino el flag va a ser NULL_PTR xq se hubiera accedido al mismo.
     flag = orderByCantTrip(q1);
     if(flag != OK){
         //
         return flag;
-    }
+    }*/
 
-   
+    
     //Ya puedo iterar
-    printTrips(q1);
-
     toBegin(q1);
     char * name;
     size_t len, cantTrips;
 
     while(hasNext(q1)){     
         next(q1, &name, &len, &cantTrips);
-        printf("%s, %ld\n", name, cantTrips);
+        printf("In iterator: %s, %ld\n", name, cantTrips);
     }
 
 

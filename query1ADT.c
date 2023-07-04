@@ -21,9 +21,19 @@ struct query1CDT{
 
 static int addTrip(query1ADT q1, size_t stationId);
 
-void printTrips(query1ADT q1){
+void printTripsID(query1ADT q1){
+ 
+   printf("Ordenado por ID: \n");
     for(tList l = q1->firstId; l!=NULL; l=l->tail){
-        printf("Station id: %ld, cantTrips %ld\n", l->stationId, l->cantTrips);
+        printf("Stration Id %ld, Station name: %s, cantTrips %ld\n",l->stationId, l->name, l->cantTrips);
+    }
+}
+
+
+void printTripsNAME(query1ADT q1){
+    printf("Ordenado por Nombre: \n");
+    for(tList l = q1->firstTrip; l!=NULL; l=l->tail){
+        printf("2:Stration Id %ld, Station name: %s, cantTrips %ld\n",l->stationId, l->name, l->cantTrips);
     }
 }
 
@@ -39,14 +49,48 @@ query1ADT newQuery1(readDataADT bikesExcel, readDataADT stationExcel,int * flag)
     return ans;
 }
 
-int processDataQ1(query1ADT q1, size_t stationIdCol){
-    int flag;
-    int * flagPtr = &flag;
-    size_t colsBikes = getDimColsExcel(q1->bikesExcel, flagPtr);
+int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t stationNameCol){
+    int flag = processCantTrips(q1, bikesIdCol);
     if(flag != OK){
+        //cosas
         return flag;
     }
-    char rowsBikes = getDimRowsExcel(q1->bikesExcel, flagPtr);
+    int rowsStation = getDimRowsExcel(q1->stationExcel, &flag);
+    if(flag != OK){
+        //cosas
+        return flag;
+    }
+    char * auxName, * auxStationId;
+    int i;
+    for(i=1; i<rowsStation-1; i++){
+        auxName = getDataFromPos(q1->stationExcel, i, stationNameCol, &flag);
+        if(flag != OK){
+        //cosas
+        return flag;
+        }
+        auxStationId = getDataFromPos(q1->stationExcel, i, stationIdCol, &flag);
+        if(flag != OK){
+        //cosas
+        return flag;
+        }
+        addName(q1, auxName, atoi(auxStationId));
+        free(auxStationId); // no le hago free a auxName xq uso ese puntero
+    }
+    flag = orderByCantTrip(q1);
+    if(flag != OK){
+        //
+    }
+    return OK;
+}
+
+int processCantTrips(query1ADT q1, size_t bikesIdCol){
+    int flag = OK;
+    int * flagPtr = &flag;
+    /*size_t colsBikes = getDimColsExcel(q1->bikesExcel, flagPtr);
+    if(flag != OK){
+        return flag;
+    }*/
+    size_t rowsBikes = getDimRowsExcel(q1->bikesExcel, flagPtr);
     if(flag != OK){
         return flag;
     }
@@ -54,7 +98,8 @@ int processDataQ1(query1ADT q1, size_t stationIdCol){
     //Agrego todos lo viajes
     char * aux;
     for(int i=1; i<rowsBikes-1; i++){
-        aux = getDataFromPos(q1->bikesExcel, i, stationIdCol, &flag);
+        aux = getDataFromPos(q1->bikesExcel, i, bikesIdCol, &flag);
+       
         if(flag != OK){
             //free de los addtrip y eso
             free(aux);
@@ -126,20 +171,22 @@ int addNamesFromVec(query1ADT q1, char ** vec, size_t dim){
     return OK;
 }
 
-int addNameList(query1ADT q1, char * name, size_t len, size_t stationId){ 
+int addName(query1ADT q1, char * name,/* size_t len,*/ size_t stationId){ 
     if(q1 == NULL){
         return NULL_POINTER;
     }
     for(tList l= q1->firstId;l!= NULL && l->stationId <= stationId ; l=l->tail){
         if(l->stationId == stationId){
             if(l->name == NULL){
-                l->name = malloc(len+1);
+                l->name = name;
+               /* l->name = malloc(len+1);
                 if(l->name == NULL){
                      return NO_MEMORY;
                 }
-                strcpy(l->name, name);
-                return 0;
+                strcpy(l->name, name);*/
+                return OK;
             }else{
+                //free(name)?;
                 return ALREADY_ADDED;
             }
         }
@@ -149,13 +196,16 @@ int addNameList(query1ADT q1, char * name, size_t len, size_t stationId){
 
 
 
-static tList addListRec(tList list, char * name, size_t len, size_t cantTrips, int * flag){
+
+
+static tList addListRec(tList list, char * name, size_t len, size_t stationId, size_t cantTrips, int * flag){
     if(list == NULL || cantTrips > list->cantTrips || (cantTrips == list->cantTrips && strcmp(name, list->name) < 0)){
         tList aux = malloc(sizeof(*aux));
         if(aux == NULL){
             *flag = NO_MEMORY;
             return list;
         }
+        aux->stationId = stationId;
         aux->name = name;
         aux->cantTrips = cantTrips;
         aux->len = len;
@@ -164,7 +214,7 @@ static tList addListRec(tList list, char * name, size_t len, size_t cantTrips, i
         return aux;
     }
     if(cantTrips <= list->cantTrips ){
-        list->tail = addListRec(list->tail, name, len, cantTrips, flag);
+        list->tail = addListRec(list->tail, name, len, stationId, cantTrips, flag);
     }
     return list;
 }
@@ -174,12 +224,19 @@ static tList addListRec(tList list, char * name, size_t len, size_t cantTrips, i
 int orderByCantTrip(query1ADT q1){
     int flag = OK;
     for(tList l= q1->firstId;l!= NULL; l=l->tail){
-        q1->firstTrip =addListRec(q1->firstTrip, l->name, l->len, l->cantTrips, &flag); // asumo que ya se agrego el nombre y la len
+       
+        if(l->name == NULL){
+            // lo que sea
+            //se hubiera accedido a NULL en el strcmp
+            return NULL_POINTER;
+        }
+        q1->firstTrip =addListRec(q1->firstTrip, l->name, l->len, l->stationId, l->cantTrips, &flag); // asumo que ya se agrego el nombre y la len
+        
         if(flag == NO_MEMORY){
             //agregar
             return NO_MEMORY;
         }
-        //free(l);
+      
     }
     return flag;
 }

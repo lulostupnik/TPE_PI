@@ -11,8 +11,8 @@ int main(){
     size_t dimColumns = sizeof(columnsToCopy) / sizeof(size_t);
     readDataADT excel1 = newRead("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/stationsMON.csv",columnsToCopy, dimColumns, 256, &flag);
 
-    size_t cols = getDimColsExcel(excel1);
-    size_t rows = getDimRowsExcel(excel1);
+    size_t cols = getDimColsExcel(excel1, &flag);
+    size_t rows = getDimRowsExcel(excel1, &flag);
 
     char * aux;
 
@@ -26,6 +26,7 @@ int main(){
         }
         printf("\n");
     }
+    printf("NEW COLS: %d\n", getNewColIdx(excel1, 4, &flag));
 
    // freeExcelData(excel1);
 

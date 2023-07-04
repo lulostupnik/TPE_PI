@@ -12,7 +12,9 @@
 
 typedef struct readDataCDT * readDataADT;
 
+void printMatrix(readDataADT data);
 
+int getNewColIdx(readDataADT data, size_t excelIdx, int * flag);
 size_t getDimRowsExcel(readDataADT data, int * flag);
 size_t getDimColsExcel(readDataADT data, int * flag);
 char * getDataFromPos(readDataADT data, size_t row, size_t col, int * flag);

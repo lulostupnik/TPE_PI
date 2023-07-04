@@ -10,13 +10,15 @@
 
 
 typedef struct query1CDT * query1ADT;
+int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t stationNameCol);
 
+void printTripsID(query1ADT q1);
+void printTripsNAME(query1ADT q1);
 
-void printTrips(query1ADT q1);
 int addNamesFromVec(query1ADT q1, char ** vec, size_t dim);
-int processDataQ1(query1ADT q1, size_t stationIdCol);
+int processCantTrips(query1ADT q1, size_t bikesIdCol);
 query1ADT newQuery1(readDataADT bikesExcel, readDataADT stationExcel,int * flag);
-int addNameList(query1ADT q1, char * name, size_t len, size_t stationId); // checkear cuando haga NYC
+int addName(query1ADT q1, char * name, /*size_t len,*/ size_t stationId); // checkear cuando haga NYC
 int orderByCantTrip(query1ADT q1);
 
 void toBegin(query1ADT query1Adt);

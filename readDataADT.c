@@ -10,6 +10,7 @@ struct readDataCDT{
     tData * dataVec; // pseudo-matrix
     size_t cols;
     size_t rows;
+    size_t * columnsToCopy;
 };
 
 
@@ -17,7 +18,26 @@ static char * copyRow(FILE * fp, size_t maxleght, int * flag);
 static tData * separeteRow(char * row, size_t maxLenght, int * flag);
 static tData * getData(FILE * fp,size_t * dimRows, size_t * columnsToCopy, size_t dimVecColumns,size_t maxLenght, int * flag);
 
+void printMatrix(readDataADT data){
+    for(int i=0; i<data->rows;i++){
+        for(int j=0; j<data->cols; j++){
+            printf("%s\t", data->dataVec[i*data->cols+j].string);
+        }
+        printf("\n");
+    }
+}
 
+int getNewColIdx(readDataADT data, size_t excelIdx, int * flag){
+    int i=0;
+    *flag = OK;
+    for(; i<data->cols; i++){
+        if(data->columnsToCopy[i] == excelIdx){
+            return i;
+        }
+    }
+    *flag = INVALID_POSITION;
+    return -1;  
+}
 
 readDataADT newRead(char * tablePath, size_t * columnsToCopy , size_t dimColumns, size_t maxLenght, int * flag){
     *flag = OK;
@@ -36,6 +56,7 @@ readDataADT newRead(char * tablePath, size_t * columnsToCopy , size_t dimColumns
      //Validar aca que los indices de las columnas esten bien (hacer un copy)
     ans->dataVec = getData(fp,&ans->rows, columnsToCopy, dimColumns, maxLenght, flag); 
     ans->cols = dimColumns;
+    ans->columnsToCopy = columnsToCopy; // asumimos que no se vuelve a cambiar (sino hay que hacer una copia)
 
     if(*flag == NO_MEMORY){
         //nose
