@@ -25,9 +25,7 @@ static int cmp(size_t e1,size_t e2){
     return 0;
     if(e1>e2)
     return 1;
-    
     return -1;
-
 }
 
 static List addTravelsRec(List lista, size_t idDepar, size_t idArr, int *flag) {

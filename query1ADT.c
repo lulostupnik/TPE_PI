@@ -62,7 +62,7 @@ int processDataQ1(query1ADT q1, size_t bikesIdCol, size_t stationIdCol, size_t s
     }
     char * auxName, * auxStationId;
     int i;
-    for(i=1; i<rowsStation-1; i++){
+    for(i=1; i<rowsStation; i++){
         auxName = getDataFromPos(q1->stationExcel, i, stationNameCol, &flag);
         if(flag != OK){
         //cosas
@@ -97,7 +97,7 @@ int processCantTrips(query1ADT q1, size_t bikesIdCol){
    
     //Agrego todos lo viajes
     char * aux;
-    for(int i=1; i<rowsBikes-1; i++){
+    for(int i=1; i<rowsBikes; i++){
         aux = getDataFromPos(q1->bikesExcel, i, bikesIdCol, &flag);
        
         if(flag != OK){

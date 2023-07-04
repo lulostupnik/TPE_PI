@@ -8,18 +8,20 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <time.h>
+
 
 #define MAX_LENGHT 256
 
 
 
 
-static char ** getVecNames(readDataADT stationsExcel, int * maxId,size_t dimRowsStations, size_t namesColumn, size_t IdColumn ,int * flag){
+static char ** getVecNames(readDataADT stationsExcel, int * dim,size_t dimRowsStations, size_t namesColumn, size_t IdColumn ,int * flag){
     char ** vecNames = NULL;
     char * auxName;
     char * auxIdPtr;
     int i, auxId;
-    *maxId = -1;
+    int maxId = -1;
     for(i=0; i<dimRowsStations ; i++){
       
         auxName = getDataFromPos(stationsExcel, i, namesColumn, flag);
@@ -43,16 +45,17 @@ static char ** getVecNames(readDataADT stationsExcel, int * maxId,size_t dimRows
         }
         
       
-        if(auxId > *maxId){
+        if(auxId > maxId){
             vecNames = reallocMem(vecNames, sizeof(*vecNames)*(auxId+1), flag);
             if(*flag != OK){
                 //completar
                 return NULL;
             }
-            *maxId = auxId;
+            maxId = auxId;
         }
         vecNames[auxId] = auxName;
     }
+    *dim = maxId+1;
     return vecNames;
 }
 
@@ -86,12 +89,13 @@ int main(int argc, char * argv[]){
         return flag;
     }
 
-    int maxId;
-    char ** vecNames = getVecNames(stationsExcel, &maxId, dimRowsStations, NAMES, ID, &flag);
+    int dim;
+    char ** vecNames = getVecNames(stationsExcel, &dim, dimRowsStations, NAMES, ID, &flag);
     if(flag != OK){
         //handle error
         return flag;
     }   
+
 
     //hago los queries
     //FALTA VER MEMEBER !!
@@ -100,17 +104,22 @@ int main(int argc, char * argv[]){
         //
         return flag;
     }
-    flag = processDataQ1(q1,1, 0, 1);// NO me entra al toBeguin aca pero el resto da igual
-   
-   
-   /* 
-   //Manera alternativa de procesar
+    
+    /*flag = processDataQ1(q1,1, 0, 1);
+     if(flag != OK){
+        //
+        return flag;
+    }*/
+
+  
+   //Manera alternativa de procesar (da invalid ID...)
    flag = processCantTrips(q1, 1); 
     if(flag != OK){
         //
         return flag;
     }
-    flag = addNamesFromVec(q1, vecNames, maxId);
+
+    flag = addNamesFromVec(q1, vecNames, dim);
     if(flag != OK){
         //
         return flag;
@@ -120,18 +129,24 @@ int main(int argc, char * argv[]){
     if(flag != OK){
         //
         return flag;
-    }*/
-
+    }
     
+
+
+
     //Ya puedo iterar
     toBegin(q1);
     char * name;
     size_t len, cantTrips;
+    int i=0;
 
     while(hasNext(q1)){     
         next(q1, &name, &len, &cantTrips);
+       i+= cantTrips;
+        //funciones HTML
         printf("In iterator: %s, %ld\n", name, cantTrips);
     }
+   
 
 
     return OK;
