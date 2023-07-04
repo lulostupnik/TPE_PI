@@ -118,7 +118,7 @@ void newQuery(readDataADT bikes, readDataADT stations, int* flag, size_t idDep, 
     }
     aux->columIdArr = idArr;
     aux->columIdDep = idDep;
-    aux->rows = getDimRowsExcel(bikes);
+    aux->rows = getDimRowsExcel(bikes, flag);
     aux->firstId = addTravels(bikes, flag, aux);
     //aux->firstName = NULL;
     print(aux->firstId);
