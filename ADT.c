@@ -30,8 +30,16 @@ Matrix  * matriz;
 size_t firstRead;
 }tBikeRentingCDT;
 
+static int SearchForRepeated(vec vec,size_t size, size_t id){
+    for(size_t i = 0; i < size; i++){
+        if(vec[i].stationId == id){
+            return 1;
+        }
+    }
+    return -1;
+}
 
- static void matrizMalloc(Matrix * matriz, size_t dim){
+static void matrizMalloc(Matrix * matriz, size_t dim){
     for(size_t i=0;i < dim; i++){
 
         matriz[i].Travels=calloc(dim,sizeof(tDestino));
@@ -43,18 +51,18 @@ size_t firstRead;
     }
  }
 
-static int  binarySearch(vec arr, int left, int right, size_t target) {
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
+static int  binarySearch(vec arr, int Min, int Max, size_t Id) {
+    while (Min <= Max) {
+        int mid = Min + (Max - Min) / 2;
 
-        if (arr[mid].stationId == target)
+        if (arr[mid].stationId == Id)
             return mid;
 
-        if (arr[mid].stationId < target)
-            left = mid + 1;
+        if (arr[mid].stationId < Id)
+            Min = mid + 1;
 
         else
-            right = mid - 1;
+            Max = mid - 1;
     }
     return -1;
 }
@@ -63,16 +71,7 @@ static void startMonthsInZero(size_t months[12]){
         months[i]=0;
     }
 }
-// static void fillWithZeros(Matrix *m, size_t size) {
-//     for (size_t j = 0; j < size; j++) {
-//         m[j].name="not traveled";
-//         for (size_t i = 0; i < size; i++) {
-//             m[j].Travels[i].travelsTo = 0;
-//             m[j].Travels[i].travelsFrom = 0;
-//             m[j].Travels[i].name = "not traveled";
-//         }
 
-// }}
 
 static int compare_destinos(const void *a, const void *b){
      const tDestino*station1 = (const tDestino *)a;
@@ -124,7 +123,7 @@ bikeRentingADT newBikesRenting(void){
 }
 
 void addStation(char *name, int id, bikeRentingADT TAD) {
-    if(binarySearch(TAD->Stations,0,TAD->stationQty-1,id) == -1){ // si no encuentra la estacion la agrega
+    if(SearchForRepeated(TAD->Stations,TAD->stationQty,id) == -1){ // si no encuentra la estacion la agrega
     if(TAD->stationQty % BLOCK==0){
     TAD->Stations = realloc(TAD->Stations, ((TAD->stationQty)+BLOCK) * sizeof(tStation)); 
     }
