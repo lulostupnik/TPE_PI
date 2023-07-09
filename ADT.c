@@ -23,19 +23,22 @@ typedef struct station * vec;
 typedef struct bikeRentingCDT{
 vec Stations;
 size_t stationQty;
-size_t maxId;
 Matrix  ** matriz;
 size_t firstRead;
 }tBikeRentingCDT;
 
-static int  Search(vec arr, int left, int right, size_t target) {
-for(int i =0 ;i< right;i++){
+static int  Search(vec arr ,int size, size_t target) {
+for(int i =0 ;i< size;i++){
 if(arr[i].stationId==target)
 return i;
 }
 return -1;
 }
-
+static void startMonthsInZero(size_t months[12]){
+    for(int i=0;i<12;i++){
+        months[i]=0;
+    }
+}
 static void fillWithZeros(Matrix **m, size_t size) {
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < size; j++) {
@@ -62,17 +65,17 @@ bikeRentingADT newBikesRenting(void){
 }
 
 void addStation(char *name, int id, bikeRentingADT TAD) {
+    if(Search(TAD->Stations,TAD->stationQty,id) == -1){ // si no encuentra la estacion la agrega
     if(TAD->stationQty % BLOCK==0){
     TAD->Stations = realloc(TAD->Stations, ((TAD->stationQty)+BLOCK) * sizeof(tStation)); 
     }
     TAD->Stations[TAD->stationQty].stationName = malloc(strlen(name) + 1);
     strcpy(TAD->Stations[TAD->stationQty].stationName, name);
     TAD->Stations[TAD->stationQty].stationId=id;
-    if(id > TAD->maxId){
-        TAD->maxId=id;
-    }
+    startMonthsInZero(TAD->Stations[TAD->stationQty].Months);
+    TAD->Stations[TAD->stationQty].travelsByMembers=0;
     (TAD->stationQty)++;
-}
+}}
 void processData(bikeRentingADT bikes,int month,int isMember,int idStart,int idEnd){
     if(bikes->firstRead == 0){
          Matrix **matriz = malloc(((bikes->stationQty) + 1) * sizeof(Matrix *));
@@ -85,8 +88,8 @@ void processData(bikeRentingADT bikes,int month,int isMember,int idStart,int idE
     bikes->matriz=matriz;
     bikes->firstRead=1;
     }
-    size_t newIdStart = Search(bikes->Stations,0,bikes->stationQty,idStart);
-    size_t newIdEnd  = Search(bikes->Stations,0,bikes->stationQty,idEnd);
+    size_t newIdStart = Search(bikes->Stations,bikes->stationQty,idStart);
+    size_t newIdEnd  = Search(bikes->Stations,bikes->stationQty,idEnd);
     if(newIdEnd == -1 || newIdStart == -1 ) {
         return;
     }
