@@ -17,6 +17,5 @@ size_t getTravelsTo(bikeRentingADT stations,int row,int col);
 size_t getTravelsFrom(bikeRentingADT stations,int row,int col);
 void  getTravelsByMoth(bikeRentingADT stations,int position,size_t travels[]);
 void freeTad(bikeRentingADT stations);
-
-
+char* getNameFromMatrix(bikeRentingADT stations,size_t row,size_t col);
 #endif
