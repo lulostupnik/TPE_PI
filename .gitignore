@@ -51,3 +51,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#los queries
+
+bikeSharingMON
+bikeSharingNYC
+query1.csv
+query1.html
+query2.csv
+query2.html
+query3.csv
+query3.html
