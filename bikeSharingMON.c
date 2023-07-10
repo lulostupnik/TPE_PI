@@ -1,4 +1,5 @@
 #include "ADT.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +25,7 @@ int loadQuery2 (bikeRentingADT tad, FILE * CSVquery1, htmlTable HTquery1);
 
 
 int main(int argc, char * argv[]){
+    errno = 0;
 
 // VALIDO LOS ARGUMENTOS QUE ME PASAN//
 // int validArgs = validationArgs(argc, argv); 
@@ -46,7 +48,7 @@ FILE * dataBikes = fopen("../EXCELS/bikesMON.csv","r"); //CAMBIAR POR argv[]
 
 FILE * CSVquery1 = fopen("query1.csv","w"); 
 htmlTable HTquery1 = newTable("query1.html", 2, "Station", "StartedTrips"); 
-
+/*
 FILE * CSVquery2 = fopen("query2.csv", "w"); 
 htmlTable HTquery2 = newTable("query2.html", 4, "StationA","StationB","Trips A->B", "Trips B->A" ); 
 
@@ -56,7 +58,7 @@ htmlTable HTquery3 = newTable("query3.html", 13, "J","F","M","A","M","J","J","A"
 size_t quantFiles = TOTAL_FILES + TOTAL_QUERIES; 
 
 FILE * fileFolder[] = {dataStations, dataBikes, CSVquery1,CSVquery2, CSVquery3}; 
-
+*/
 // CHEQUEAR QUE LOS ARCHIVOS SE HAYAN PASADO DE MANERA CORRECTA (POR UN LADO LOS * FILES Y POR OTRO LOS HTML ? ) 
 
 // CARGO LA DATA DE STATIONS Y DE BIKES EN EL ADT // 
@@ -68,8 +70,8 @@ readDataBikes(dataBikes,TadStations);
 // CARGO LOS QUERIES 
 
 loadQuery1(TadStations, CSVquery1, HTquery1);
-loadQuery2(TadStations, CSVquery2, HTquery2);
-loadQuery3(TadStations, CSVquery3, HTquery3);
+//loadQuery2(TadStations, CSVquery2, HTquery2);
+//loadQuery3(TadStations, CSVquery3, HTquery3);
 
 freeTad(TadStations);
 }
@@ -141,29 +143,36 @@ char delim[] = ";\n";
 }
 
 int loadQuery1 (bikeRentingADT ADT, FILE * CSVquery1, htmlTable HTquery1){
-    sortTravels(ADT);
-    size_t size = getNumberOfStations(ADT);
+   
     size_t travels;
     char * name;
     char * travelString;
+
+    toBeginQ1(ADT);
     fprintf(CSVquery1, "Station;StartedTrips\n"); //Titulos Columnas CSV
-    for( size_t i = 0; i < size; i++) {
-        travels = getTravels(ADT,i);
-        name = getNameByPosition(ADT,i);
+    while(hasNextQ1(ADT)){
+        travels = getTripsQ1(ADT);
+        name = getNameQ1(ADT);
         travelString = intToString(travels);
+        if(name == NULL || travelString == NULL || errno == ENOMEM){
+            free(travelString);
+            free(name); // Libero ambos por si uno es NULL y el otro no. 
+            return -1;
+        }   
         addHTMLRow(HTquery1,name,travelString); //Voy Imprimiendo el HTML
         int query1Ans = fprintf(CSVquery1,"%s;%zu\n",name, travels); //Voy Imprimiendo el CSV
         if(query1Ans < 0){
             //ERROR 
         }
         free(travelString);
-        //FUNCIONO
+        free(name);
+        nextQ1(ADT);
     }
     fclose(CSVquery1);
     closeHTMLTable(HTquery1);
     return 0;
 }
-
+/*
 int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
     orderByName(ADT);
     size_t size = getsizeOfMatrix(ADT);
@@ -226,3 +235,4 @@ int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
     closeHTMLTable(HTquery3);
     return 0;
 }
+*/
