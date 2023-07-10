@@ -30,11 +30,14 @@ typedef struct station{
 
 typedef struct station * vec;
 
+typedef enum {UNORDERED=0, ID, NAME, TRIPS} tOrder;
+
 typedef struct bikeRentingCDT{
     vec Stations;
     size_t stationQty;
     tMatrix* matriz;
     size_t firstRead;
+    tOrder order;
     size_t oldSizeOfMatriz;
 }tBikeRentingCDT;
 
@@ -80,7 +83,7 @@ if(flag == 1){
            matriz[i].Travels[j].travelsTo = 0;
         }  
     }
-    }else{
+}else{
         for( size_t i=0; i < dim; i++){
         matriz[i].Travels=realloc(matriz[i].Travels,dim * sizeof(tDestino));
         }
@@ -160,6 +163,7 @@ static int compare_matrix(const void *a, const void *b) {
 
 void orderByids(bikeRentingADT ADT){
     qsort(ADT->Stations,ADT->stationQty,sizeof(tStation),compare_ids);
+    ADT->order = ID;
 }
 
 bikeRentingADT newBikesRenting(void){
@@ -183,6 +187,15 @@ void addStation(char *name,size_t id,bikeRentingADT ADT) {
 }
 void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
     int flag;
+    if(ADT->order != ID){
+         orderByids(ADT);
+    }
+   size_t newIdStart = binarySearch(ADT->Stations,0,ADT->stationQty-1,idStart);
+    size_t newIdEnd  = binarySearch(ADT->Stations,0,ADT->stationQty-1,idEnd);
+    if( newIdEnd == -1 || newIdStart == -1 ) {
+        return;
+    }
+
     if( ADT->firstRead == 1){
         if(ADT->matriz == NULL){
             flag=1;
@@ -191,15 +204,11 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
             }
         ADT->matriz = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
         matrizMalloc(ADT->matriz,ADT->stationQty,flag,&(ADT->oldSizeOfMatriz));
-        orderByids(ADT);
+       
         //ADT->Stations = realloc(ADT->Stations, (ADT->stationQty) * sizeof(tStation));
         ADT->firstRead = 0;
     }
-    size_t newIdStart = binarySearch(ADT->Stations,0,ADT->stationQty-1,idStart);
-    size_t newIdEnd  = binarySearch(ADT->Stations,0,ADT->stationQty-1,idEnd);
-    if( newIdEnd == -1 || newIdStart == -1 ) {
-        return;
-    }
+ 
     if( isMember == 1){
         ADT->Stations[newIdStart].travelsByMembers++;
     }
@@ -214,12 +223,10 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
         ADT->matriz[newIdStart].Travels[newIdEnd].name=nameEnd;
         ADT->matriz[newIdStart].name=nameStart;
         ADT->matriz[newIdStart].totalTravelsTo++;
-    }
-    ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo++;
-    if( ADT->matriz[newIdEnd].Travels[newIdStart].travelsTo == 0 && ADT->matriz[newIdEnd].Travels[newIdStart].travelsFrom == 0){
         ADT->matriz[newIdEnd].Travels[newIdStart].name = nameStart;
         ADT->matriz[newIdEnd].name = nameEnd;
     }
+    ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo++;
     ADT->matriz[newIdEnd].Travels[newIdStart].travelsFrom++;
 }
 
@@ -229,12 +236,14 @@ void orderByName(bikeRentingADT ADT){
        for( size_t i = 0; i < ADT->oldSizeOfMatriz; i++){
         qsort(ADT->matriz[i].Travels,ADT->oldSizeOfMatriz,sizeof(tDestino),compare_destinos);
         }
-     
-     }
+    ADT->order = NAME;
+}
+
 
 
 void sortTravels(bikeRentingADT ADT){
     qsort(ADT->Stations,ADT->stationQty,sizeof(tStation),compare_Travels); 
+    ADT->order = TRIPS;
 }
 
 size_t getNumberOfStations(bikeRentingADT ADT){

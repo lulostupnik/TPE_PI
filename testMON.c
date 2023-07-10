@@ -41,8 +41,8 @@ bikeRentingADT TadStations = newBikesRenting();
     }
 
 // APERTURA DE LOS ARCHIVOS 
-FILE * dataStations = fopen("/mnt/c/Users/lulos/Desktop/FINAL PI/EXCELS/stationsMON.csv","r"); //CAMBIAR POR argv[]
-FILE * dataBikes = fopen("/mnt/c/Users/lulos/Desktop/FINAL PI//EXCELS/bikesMON.csv","r"); //CAMBIAR POR argv[]
+FILE * dataStations = fopen("/home/neax/Last/stationsMON.csv","r"); //CAMBIAR POR argv[]
+FILE * dataBikes = fopen("/home/neax/Last/bikesMON.csv","r"); //CAMBIAR POR argv[]
 
 FILE * CSVquery1 = fopen("query1.csv","w"); 
 htmlTable HTquery1 = newTable("query.html", 2, "Station", "StartedTrips"); 
