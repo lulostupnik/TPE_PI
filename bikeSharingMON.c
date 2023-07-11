@@ -4,28 +4,78 @@
 #include <stdlib.h>
 #include <string.h>
 #include "htmlTable.h"
-
-#define BUFFER_LENGHT 512
+/*
+Maximo de caracteres por linea.
+*/
+#define BUFFER_LENGHT 256
+/*
+Posicion de en el cual se encuentra el nombre de la estacion dentro del csv de stations.
+*/
 #define StationNameCol 1
+/*
+Posicion de en el cual se encuentra el id de la estacion dentro del csv de stations.
+*/
 #define StationIdcol 0
+/*
+Posicion de en el cual se encuentra la fecha de inicio del viaje dentro del csv de bikes.
+*/
 #define DATE_COL 0
+/*
+Posicion de en el cual se encuentra el id de la estacion de salida dentro del csv de bikes.
+*/
 #define ID_START_COL 1
+/*
+Posicion de en el cual se encuentra el id de la estacion de llegada dentro del csv de bikes.
+*/
 #define ID_END_COL 3
+/*
+Posicion de en el cual se encuentra la columna "Member" dentro del csv de bikes.
+*/
 #define ISMEMBER 4
-#define MONTHS 12 
-
-#define CANT_QUERIES 3
-#define CANT_CSV_TO_READ 2
-
+/*
+Enum de los distintos errores que podrian surgir a la hora de correr el programa.
+*/
 typedef enum {OK=0,WRONG_AMOUNT_OF_ARGUMENTS,WRONG_PATH,NOT_CREATED,NO_MEM,PRINT_ERROR} mainErrors;
-
+/*
+lee y separa la informacion del archivo de estaciones para enviarsela al TAD.
+Devuelve 0 si lee y procesa los datos sin error.
+Devuelve NO_MEM si hubo un error de lectura o procesado.
+dataStations:archivo csv de estaciones.
+TadStations:ADT.  
+*/
 int readDataStations(FILE * dataStations,bikeRentingADT TadStations);
+/*
+lee y separa la informacion del archivo de bicicletas para enviarsela al TAD.
+Devuelve 0 si lee y procesa los datos sin error.
+Devuelve NO_MEM si hubo un error de lectura o procesado.
+dataBikes: archivo csv de bicicletas.
+TadStations:ADT.  
+*/
 int readDataBikes( FILE * dataBikes,bikeRentingADT TadStations);
+/*
+Funcion para procesar todos los tipos de errores que se podrian generar y imprimir su explicacion en la salida
+de errores.
+*/
 void handleErrors(mainErrors exitCode,const char * error,bikeRentingADT tad);
+/*
+Las proximas 3 funciones Crean un archivo html y un archivo csv con lo solicitado.
+Devuelven 0  si no hay error,PRINT_ERROR en caso de haber un error a la hora de escribir en el csv o NO_MEM en caso de no poder copiar
+el nombre de la estacion.
+*/
 int loadQuery3 (bikeRentingADT tad, FILE * CSVquery3, htmlTable HTquery3);
 int loadQuery1 (bikeRentingADT tad, FILE * CSVquery2, htmlTable HTquery2);
 int loadQuery2 (bikeRentingADT tad, FILE * CSVquery1, htmlTable HTquery1);
+
+#define MONTHS 12 
+#define CANT_QUERIES 3
+#define CANT_CSV_TO_READ 2
+/*
+Funcion para cerrar todos los archivos csv.
+*/
 void closeCSV(FILE * fp[], int dim);
+/*
+Funcion para cerrar todos las tablas html.
+*/
 void closeHTML(htmlTable tableVec[], int dim);
 
 int main(int argc, char * argv[]){
