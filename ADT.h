@@ -35,15 +35,12 @@ void nextQ3(bikeRentingADT ADT);
 
 void addStation(char * name,size_t id,bikeRentingADT ADT);
 void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd);
-void sortTravels(bikeRentingADT ADT);
+
 size_t getNumberOfStations(bikeRentingADT ADT);
-size_t getTravels(bikeRentingADT ADT,size_t position);
-size_t getTravelsTo(bikeRentingADT ADT,size_t row,size_t col);
-size_t getTravelsFrom(bikeRentingADT ADT,size_t row,size_t col);
+
+
 void  getTravelsByMonth(bikeRentingADT ADT,size_t travels[]);
 void freeTad(bikeRentingADT ADT);
 
 
-
-void printMatrix(bikeRentingADT adt);
 #endif

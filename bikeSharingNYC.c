@@ -42,12 +42,9 @@ bikeRentingADT TadStations = newBikesRenting();
     }
 
 // APERTURA DE LOS ARCHIVOS 
-FILE * dataStations = fopen("./stationsNYC.csv","r"); //CAMBIAR POR argv[]
-FILE * dataBikes = fopen("./bikesNYC.csv","r"); //CAMBIAR POR argv[]
-// FILE * dataStations2 = fopen("./test3.csv","r"); //CAMBIAR POR argv[]
-// FILE * dataBikes2 = fopen("./test2.csv","r"); //CAMBIAR POR argv[]
-// FILE * dataBikes3 = fopen("./test4.csv","r");
-// FILE * dataStations3 = fopen("./test5.csv","r");
+FILE * dataStations = fopen("../EXCELS/stationsNYC.csv","r"); //CAMBIAR POR argv[]
+FILE * dataBikes = fopen("../EXCELS/bikesNYC.csv","r"); //CAMBIAR POR argv[]
+
 
 FILE * CSVquery1 = fopen("query1.csv","w"); 
 htmlTable HTquery1 = newTable("query1.html", 2, "Station", "StartedTrips"); 

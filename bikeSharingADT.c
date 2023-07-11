@@ -26,7 +26,7 @@ typedef struct station{
     size_t nameLen;
     size_t stationId;
     size_t travelsByMembers;
-    size_t Months[12];
+    size_t Months[MONTHS];
 }tStation;
 
 typedef struct station * vec;
@@ -59,27 +59,13 @@ static int SearchForRepeated(vec vec,size_t size, size_t id);
 static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize);
 static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize);
 static int  binarySearch(vec vec, int min, int max, size_t Id);
-static void startMonthsInZero(size_t months[12]);
+static void startMonthsInZero(size_t months[MONTHS]);
 static int compare_destinos(const void *a, const void *b);
 static int compare_stations(const void * a, const void * b);
 static int compare_matrix(const void *a, const void *b) ;
 static void sortByName(bikeRentingADT ADT);
 
-void printMatrix(bikeRentingADT adt){
-    printf("%d\n", adt->order);
-    for(int i=0; i<adt->oldSizeOfMatriz; i++){
-        printf("From: %s\n", adt->matriz[i].name);
-        for(int j=0; j<adt->oldSizeOfMatriz;j++){
-            if(adt->matriz[i].Travels[j].name != NULL){
-                printf("TravelsTo:%ld  TravelsFrom %ld %s\n", adt->matriz[i].Travels[j].travelsTo, adt->matriz[i].Travels[j].travelsFrom ,adt->matriz[i].Travels[j].name);
-            }
-        }
-        printf("\n");
-    }
-}
 
-
-////////////////////////////
 
 static int compare_Travels(const void * a, const void * b){
     int c;
@@ -95,41 +81,9 @@ static void sortByTrips(bikeRentingADT ADT){
     qsort(ADT->Stations,ADT->stationQty,sizeof(tStation),compare_Travels); 
     ADT->order = TRIPS;
 }
-
 size_t getNumberOfStations(bikeRentingADT ADT){
     return ADT->stationQty;
 }
-
-size_t getTravels(bikeRentingADT ADT,size_t position){
-    return ADT->Stations[position].travelsByMembers;
-}
-
-char * getNameByPosition(bikeRentingADT ADT,size_t position){
-    return ADT->Stations[position].stationName;
-}
-
-size_t getTravelsTo(bikeRentingADT ADT,size_t row,size_t col){
-    return ADT->matriz[row].Travels[col].travelsTo;
-}
-
-size_t getTravelsFrom(bikeRentingADT ADT,size_t row,size_t col){
-    return ADT->matriz[row].Travels[col].travelsFrom;
-}
-
-void getTravelsByMonth(bikeRentingADT ADT,size_t travels[]){
-    for( size_t i = 0; i < MONTHS; i++){
-        travels[i] = ADT->Stations[ADT->iterators.q3_i].Months[i];
-    }
-}
-
-char* getNameFromMatrix(bikeRentingADT ADT,size_t row,size_t col){
-    return ADT->matriz[row].Travels[col].name;
-}
-
-size_t getsizeOfMatrix(bikeRentingADT ADT){
-    return ADT->oldSizeOfMatriz;
-}
-
 
 
 static int SearchForRepeated(vec vec,size_t size, size_t id){
@@ -141,28 +95,27 @@ static int SearchForRepeated(vec vec,size_t size, size_t id){
     return -1;
 }
 
-
 static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
+    tDestino aux = {NULL,0,0,0};
     for (size_t i = 0; i < *oldSize;i++){
         for (size_t j = *oldSize; j < dim;j++){
-            matriz[i].Travels[j].name = NULL;
-           matriz[i].Travels[j].travelsFrom = 0;
-           matriz[i].Travels[j].travelsTo = 0;
-            matriz[i].Travels[j].nameLen = 0;
-           matriz[j].Travels[i].name = NULL;
-           matriz[j].Travels[i].travelsFrom = 0;
-           matriz[j].Travels[i].travelsTo = 0;
-           matriz[j].Travels[i].nameLen = 0;
-         
-           
-    }
+            matriz[i].Travels[j] = matriz[j].Travels[i] = aux;
+            // matriz[i].Travels[j].name = NULL;
+            // matriz[i].Travels[j].travelsFrom = 0;
+            // matriz[i].Travels[j].travelsTo = 0;
+            // matriz[i].Travels[j].nameLen = 0;
+            // matriz[j].Travels[i].name = NULL;
+            // matriz[j].Travels[i].travelsFrom = 0;
+            // matriz[j].Travels[i].travelsTo = 0;
+            // matriz[j].Travels[i].nameLen = 0;
+        }
     }
     for(size_t i=*oldSize;i<dim;i++){
         for(size_t j=*oldSize;j<dim;j++){
             matriz[i].Travels[j].name = NULL;
-           matriz[i].Travels[j].travelsFrom = 0;
-           matriz[i].Travels[j].travelsTo = 0;
-           matriz[i].Travels[j].nameLen = 0;
+            matriz[i].Travels[j].travelsFrom = 0;
+            matriz[i].Travels[j].travelsTo = 0;
+            matriz[i].Travels[j].nameLen = 0;
     }
     }
 
@@ -207,7 +160,7 @@ static int  binarySearch(vec vec, int min, int max, size_t Id) {
 
 
 
-static void startMonthsInZero(size_t months[12]){
+static void startMonthsInZero(size_t months[MONTHS]){
     for( size_t i = 0; i < MONTHS; i++){
         months[i] = 0;
     }
@@ -274,6 +227,7 @@ bikeRentingADT newBikesRenting(void){
 
 void addStation(char *name,size_t id,bikeRentingADT ADT) {
     ADT->firstRead=1;
+    ADT->order = UNORDERED;
     if(SearchForRepeated(ADT->Stations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega                   
         // if(ADT->stationQty % BLOCK == 0){
         //     ADT->Stations = realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation)); 
@@ -344,7 +298,10 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
 //Iteradores para que el front pueda hacer los queries:
 
 void toBeginQ1(bikeRentingADT ADT){
-    sortByTrips(ADT);
+    if(ADT->order != TRIPS){
+        sortByTrips(ADT);
+    }
+    
     ADT->iterators.q1_i = 0;
 }
 
@@ -384,8 +341,9 @@ void nextQ1(bikeRentingADT ADT){
 
 
 void toBeginQ2(bikeRentingADT ADT){
-    sortByName(ADT);
-    
+    if(ADT->order != NAME){
+        sortByName(ADT);
+    }
     ADT->iterators.q2_i = 0;
     ADT->iterators.q2_j = 0;
 
@@ -466,7 +424,9 @@ void nextDestinationQ2(bikeRentingADT ADT){
 
 
 void toBeginQ3(bikeRentingADT ADT){
-    sortByName(ADT);
+    if(ADT->order != NAME){
+          sortByName(ADT);
+    }
     ADT->iterators.q3_i = 0;
 }
 int hasNextQ3(bikeRentingADT ADT){
@@ -486,6 +446,13 @@ char * getNameQ3(bikeRentingADT ADT){
 
 void nextQ3(bikeRentingADT ADT){
     ADT->iterators.q3_i++;
+}
+
+
+void getTravelsByMonth(bikeRentingADT ADT,size_t travels[]){
+    for( size_t i = 0; i < MONTHS; i++){
+        travels[i] = ADT->Stations[ADT->iterators.q3_i].Months[i];
+    }
 }
 
 
