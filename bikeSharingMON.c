@@ -31,7 +31,7 @@ int main(int argc, char * argv[]){
     errno = 0;
     int exitCode;
 // VALIDO LOS ARGUMENTOS QUE ME PASAN//
-    if(argc != 2){
+    if(argc != 3){
          exitCode=WRONG_AMOUNT_OF_ARGUMENTS; 
          handleErrors(exitCode,"Cantidad erronea de argumentos",NULL);
     }
@@ -46,12 +46,12 @@ bikeRentingADT TAD = newBikesRenting();
     }
 
 // APERTURA DE LOS ARCHIVOS 
-    FILE * dataStations = fopen(argv[1],"r"); 
+    FILE * dataStations = fopen(argv[2],"r"); 
         if(dataStations == NULL){
             exitCode=WRONG_PATH;
             handleErrors(exitCode,"Archivo no encontrado",TAD);
         }
-    FILE * dataBikes = fopen(argv[0],"r"); 
+    FILE * dataBikes = fopen(argv[1],"r"); 
         if(dataBikes == NULL){
             exitCode=WRONG_PATH;
             handleErrors(exitCode,"Archivo no encontrado",TAD);
@@ -109,28 +109,36 @@ bikeRentingADT TAD = newBikesRenting();
 // CARGO LOS QUERIES 
 
     exitCode=loadQuery1(TAD, CSVquery1, HTquery1);
-    if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
-        fclose(CSVquery1);
-        closeHTMLTable(HTquery1);
-        handleErrors(exitCode,"Error al realizar el query1",TAD);
-    }
-
-
-    exitCode=loadQuery2(TAD, CSVquery2, HTquery2);
+    fclose(CSVquery1);
+    closeHTMLTable(HTquery1);
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
         fclose(CSVquery2);
         closeHTMLTable(HTquery2);
+        fclose(CSVquery3);
+        closeHTMLTable(HTquery3);
+        handleErrors(exitCode,"Error al realizar el query1",TAD);
+    }
+   
+
+
+    exitCode=loadQuery2(TAD, CSVquery2, HTquery2);
+    fclose(CSVquery2);
+    closeHTMLTable(HTquery2);
+    if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
+        fclose(CSVquery3);
+        closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al realizar el query2",TAD);
     }    
 
 
     exitCode=loadQuery3(TAD, CSVquery3, HTquery3);
+    fclose(CSVquery3);
+    closeHTMLTable(HTquery3);
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al realizar el query3",TAD);
     }    
-    handleErrors(OK,"Todo bien!!",TAD);            
+    freeTad(TAD);
+    return 0;           
 }
 
     static char * intToString(size_t num) {
@@ -235,8 +243,7 @@ bikeRentingADT TAD = newBikesRenting();
             free(name);
             nextQ1(ADT);
         }
-        fclose(CSVquery1);
-        closeHTMLTable(HTquery1);
+
         return OK;
     }
 
