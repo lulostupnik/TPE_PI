@@ -43,4 +43,7 @@ size_t getTravelsFrom(bikeRentingADT ADT,size_t row,size_t col);
 void  getTravelsByMonth(bikeRentingADT ADT,size_t travels[]);
 void freeTad(bikeRentingADT ADT);
 
+
+
+void printMatrix(bikeRentingADT adt);
 #endif
