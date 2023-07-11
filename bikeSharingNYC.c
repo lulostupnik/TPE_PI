@@ -199,7 +199,7 @@ int main(int argc, char * argv[]){
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
         handleErrors(exitCode,"Error al realizar el query3",TAD);
     } 
-    printf("%d %d", dimCsvVec, dimHtmlVec);
+ 
     return 0;           
 }
 
