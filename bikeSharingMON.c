@@ -141,7 +141,7 @@ bikeRentingADT TAD = newBikesRenting();
     return 0;           
 }
 
-    static char * intToString(size_t num) {
+    static char * numToString(size_t num) {
         int size = snprintf(NULL,0,"%ld",num);                  //Se calcula la cantidad de digitos de ADT
         char * str = malloc((size+1) * sizeof(char));
         if (str == NULL || errno == ENOMEM ) {
@@ -228,7 +228,7 @@ bikeRentingADT TAD = newBikesRenting();
         while(hasNextQ1(ADT)){
             travels = getTripsQ1(ADT);
             name = getNameQ1(ADT);
-            travelString = intToString(travels);
+            travelString = numToString(travels);
             if(name == NULL || travelString == NULL || errno == ENOMEM){
                 free(travelString);
                 free(name);                                                    
@@ -269,11 +269,11 @@ bikeRentingADT TAD = newBikesRenting();
                     free(stationA);
                     return NO_MEM;
                 }
-                travelsToString = intToString(travelsTo);
+                travelsToString = numToString(travelsTo);
                 if(travelsToString == NULL){
                     return NO_MEM;    
                 }
-                travelsFromString = intToString(travelsFrom);
+                travelsFromString = numToString(travelsFrom);
                 if(travelsFromString == NULL){
                     return NO_MEM;
                 }
