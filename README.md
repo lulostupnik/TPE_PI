@@ -8,11 +8,11 @@
 
 # COMO GENERAR EJECUTABLES 
 **All**
-- Si se desea compilar todo el programa, correr en la consola el comando "make all". El mismo genera 2 ejecutables, uno correspondiente a la ciudad de Nueva York (NYC) y otro a Montreal (MON).
+- Si se desea compilar el ejecutable para ambas ciudades, correr en la consola el comando "make all". El mismo genera 2 ejecutables, uno correspondiente a la ciudad de Nueva York (NYC) y otro a Montreal (MON).
   
 **Una Ciudad**
-- Si se quiere compilar solo la ciudad de Nueva York, correr el comando "make BikeSharingNYC".
-- Si se desea compilar solo la ciudad de Montreal, correr el comando "make BikeSharingMON".
+- Si se quiere compilar solo la ciudad de Nueva York, correr el comando "make bikeSharingNYC".
+- Si se desea compilar solo la ciudad de Montreal, correr el comando "make bikeSharingMON".
 
 **Flag -g**
 - Para compilar con el flag -g, correr en la consola el comando "make debug".
