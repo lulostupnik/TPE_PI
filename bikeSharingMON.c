@@ -58,7 +58,7 @@ de errores.
 */
 void handleErrors(mainErrors exitCode,const char * error,bikeRentingADT tad);
 /*
-Las proximas 3 funciones Crean un archivo html y un archivo csv con lo solicitado.
+Las proximas 3 funciones cargan los datos a la tabla html y al csv con lo solicitado.
 Devuelven 0  si no hay error,PRINT_ERROR en caso de haber un error a la hora de escribir en el csv o NO_MEM en caso de no poder copiar
 el nombre de la estacion.
 */
@@ -204,7 +204,7 @@ int main(int argc, char * argv[]){
 }
 
 static char * sizetToString(size_t num) {
-    int size = snprintf(NULL,0,"%ld",num);                  //Se calcula la cantidad de digitos de ADT
+    int size = snprintf(NULL,0,"%ld",num);                  //Se calcula la cantidad de digitos del numero
     char * str = malloc((size+1) * sizeof(char));
     if (str == NULL || errno == ENOMEM ) {
         return NULL;
