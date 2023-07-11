@@ -14,6 +14,9 @@
 #define ISMEMBER 4
 #define MONTHS 12 
 
+#define CANT_QUERIES 3
+#define CANT_CSV_TO_READ 2
+
 typedef enum {OK=0,WRONG_AMOUNT_OF_ARGUMENTS,WRONG_PATH,NOT_CREATED,NO_MEM,PRINT_ERROR} mainErrors;
 
 int readDataStations(FILE * dataStations,bikeRentingADT TadStations);
@@ -22,6 +25,8 @@ void handleErrors(mainErrors exitCode,const char * error,bikeRentingADT tad);
 int loadQuery3 (bikeRentingADT tad, FILE * CSVquery3, htmlTable HTquery3);
 int loadQuery1 (bikeRentingADT tad, FILE * CSVquery2, htmlTable HTquery2);
 int loadQuery2 (bikeRentingADT tad, FILE * CSVquery1, htmlTable HTquery1);
+void closeCSV(FILE * fp[], int dim);
+void closeHTML(htmlTable tableVec[], int dim);
 
 int main(int argc, char * argv[]){
     errno = 0;
@@ -40,139 +45,111 @@ int main(int argc, char * argv[]){
     }
 
     // APERTURA DE LOS ARCHIVOS 
+
+    //Creo un vector con los archivos, y a medida que los abro aumento la dim, para facilitar el cierre de los mismos en caso de error
+    FILE * csvVec[CANT_QUERIES +  CANT_CSV_TO_READ];
+    htmlTable htmlVec[CANT_QUERIES];
+    int dimCsvVec = 0, dimHtmlVec = 0;
+
     FILE * dataStations = fopen(argv[2],"r"); 
     if(dataStations == NULL){
         exitCode=WRONG_PATH;
         handleErrors(exitCode,"Archivo no encontrado",TAD);
     }
+    csvVec[dimCsvVec++] = dataStations;
+    
     FILE * dataBikes = fopen(argv[1],"r"); 
     if(dataBikes == NULL){
-        fclose(dataStations);
+        closeCSV(csvVec, dimCsvVec);
         exitCode=WRONG_PATH;
         handleErrors(exitCode,"Archivo no encontrado",TAD);
     }
+    csvVec[dimCsvVec++] = dataBikes;
+
     FILE * CSVquery1 = fopen("query1.csv","w"); 
     if(CSVquery1 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
+        closeCSV(csvVec, dimCsvVec);
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    csvVec[dimCsvVec++] = CSVquery1;
     htmlTable HTquery1 = newTable("query1.html", 2, "Station", "StartedTrips"); 
     if(HTquery1 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
+        closeCSV(csvVec, dimCsvVec);
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    htmlVec[dimHtmlVec++] = HTquery1;
 
     FILE * CSVquery2 = fopen("query2.csv", "w"); 
     if(CSVquery2 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        closeHTMLTable(HTquery1);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    csvVec[dimCsvVec++] = CSVquery2;
+
     htmlTable HTquery2 = newTable("query2.html", 4, "StationA","StationB","Trips A->B", "Trips B->A" );
     if(HTquery2 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        closeHTMLTable(HTquery1);
+    
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    htmlVec[dimHtmlVec++] = HTquery2;
 
     FILE * CSVquery3 = fopen("query3.csv", "w");
     if(CSVquery3 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    csvVec[dimCsvVec++] = CSVquery3;
     htmlTable HTquery3 = newTable("query3.html", 13, "J","F","M","A","M","J","J","A","S","O","N","D","Station");
     if(HTquery3 == NULL){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         exitCode=NOT_CREATED;
         handleErrors(exitCode,"No se pudo crear el archivo",TAD);
     }
+    htmlVec[dimHtmlVec++] = HTquery3;
+    
     // CARGO LA DATA DE STATIONS Y DE BIKES EN EL ADT  
+
     exitCode=readDataStations(dataStations,TAD);
     if(exitCode == NO_MEM){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
-        closeHTMLTable(HTquery3);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         handleErrors(exitCode,"Error al leer y procesar los datos",TAD);
     }
     exitCode=readDataBikes(dataBikes,TAD);
     if(exitCode==NO_MEM){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
-        closeHTMLTable(HTquery3);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         handleErrors(exitCode,"Error al leer y procesar los datos",TAD);
     }
     // CARGO LOS QUERIES 
     exitCode=loadQuery1(TAD, CSVquery1, HTquery1);
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
-        closeHTMLTable(HTquery3);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         handleErrors(exitCode,"Error al realizar el query1",TAD);
     }
     exitCode=loadQuery2(TAD, CSVquery2, HTquery2);
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
-        fclose(dataBikes);
-        fclose(dataStations);
-        fclose(CSVquery1);
-        fclose(CSVquery2);
-        fclose(CSVquery3);
-        closeHTMLTable(HTquery1);
-        closeHTMLTable(HTquery2);
-        closeHTMLTable(HTquery3);
+        closeCSV(csvVec, dimCsvVec);
+        closeHTML(htmlVec, dimHtmlVec);
         handleErrors(exitCode,"Error al realizar el query2",TAD);
     }    
     exitCode=loadQuery3(TAD, CSVquery3, HTquery3);
-    fclose(dataBikes);
-    fclose(dataStations);
-    fclose(CSVquery1);
-    fclose(CSVquery2);
-    fclose(CSVquery3);
-    closeHTMLTable(HTquery1);
-    closeHTMLTable(HTquery2);
-    closeHTMLTable(HTquery3);
+    closeCSV(csvVec, dimCsvVec);
+    closeHTML(htmlVec, dimHtmlVec);
     freeTad(TAD);
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
         handleErrors(exitCode,"Error al realizar el query3",TAD);
-    }    
+    } 
+    printf("%d %d", dimCsvVec, dimHtmlVec);
     return 0;           
 }
 
@@ -357,5 +334,16 @@ void handleErrors(mainErrors exitCode, const char * Error,bikeRentingADT ADT){
     fprintf(stderr,"%s\n",Error);
     freeTad(ADT);
     exit(exitCode);
+}
+
+void closeCSV(FILE * fp[], int dim){
+    for(int i=0; i<dim; i++){
+        fclose(fp[i]);
+    }
+}
+void closeHTML(htmlTable tableVec[], int dim){
+    for(int i=0; i<dim; i++){
+        closeHTMLTable(tableVec[i]);
+    }
 }
 
