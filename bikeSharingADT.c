@@ -121,9 +121,6 @@ static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
 
 }
 
-
-
-
 static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize){
 if(flag == 1){
    for( size_t i = 0; i < dim; i++){
@@ -138,8 +135,6 @@ if(flag == 1){
     }
     (*oldSize)=dim;
     }
-
-
 
 static int  binarySearch(vec vec, int min, int max, size_t Id) {
      if (min > max){
@@ -157,15 +152,11 @@ static int  binarySearch(vec vec, int min, int max, size_t Id) {
     return -1;
 }
 
-
-
-
 static void startMonthsInZero(size_t months[MONTHS]){
     for( size_t i = 0; i < MONTHS; i++){
         months[i] = 0;
     }
 }
-
 
 static int compare_ids(const void * a, const void * b){
     
@@ -203,8 +194,7 @@ static int compare_destinos(const void *a, const void *b){
          return strcasecmp(station1->name, station2->name);
 }
 
-static int compare_matrix(const void *a, const void *b) {
-
+static int compare_matrix(const void *a, const void *b){
     const tMatrix *station1 = (const tMatrix *)a;
     const tMatrix *station2 = (const tMatrix *)b;
     if(station1->name== NULL){
@@ -229,12 +219,9 @@ void addStation(char *name,size_t id,bikeRentingADT ADT) {
     ADT->firstRead=1;
     ADT->order = UNORDERED;
     if(SearchForRepeated(ADT->Stations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega                   
-        // if(ADT->stationQty % BLOCK == 0){
-        //     ADT->Stations = realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation)); 
-        // }
         ADT->Stations = realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation)); 
         ADT->Stations[ADT->stationQty].nameLen = strlen(name);
-        ADT->Stations[ADT->stationQty].stationName = malloc(ADT->Stations[ADT->stationQty].nameLen + 1);
+        ADT->Stations[ADT->stationQty].stationName = malloc(ADT->Stations[ADT->stationQty].nameLen + 1); // ver si hacer f aux
         strcpy(ADT->Stations[ADT->stationQty].stationName, name);
         ADT->Stations[ADT->stationQty].stationId = id;
         startMonthsInZero(ADT->Stations[ADT->stationQty].Months);
@@ -242,6 +229,7 @@ void addStation(char *name,size_t id,bikeRentingADT ADT) {
         ADT->stationQty++;
     }
 }
+
 void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
     int flag;
     if(ADT->order != ID){
@@ -254,20 +242,23 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
     }
 
     if( ADT->firstRead == 1){
-        if(ADT->matriz == NULL){
-            flag=1;
-            }else{
-            flag=0;
-            }
+        // if(ADT->matriz == NULL){
+        //     flag=1;
+        //     }else{
+        //     flag=0;
+        //     }
+        flag = (ADT->matriz == NULL); 
+        
         ADT->matriz = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
         matrizMalloc(ADT->matriz,ADT->stationQty,flag,&(ADT->oldSizeOfMatriz));
         ADT->firstRead = 0;
     }
  
-    if( isMember == 1){
+    if(isMember){
         ADT->Stations[newIdStart].travelsByMembers++;
     }
-        ADT->Stations[newIdStart].Months[month-1]++;;
+    
+    ADT->Stations[newIdStart].Months[month-1]++;;
 
     if( newIdEnd == newIdStart){
         return;
