@@ -496,5 +496,6 @@ void freeTad(bikeRentingADT ADT) {
         }
         free(ADT->matrix);
         free(ADT->vecStations);
-        free(ADT);}
+        free(ADT);
+}
 }
