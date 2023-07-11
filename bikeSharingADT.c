@@ -174,9 +174,12 @@ if(flag == 1){
 
 
 
-static int  binarySearch(vec vec, size_t min, size_t max, size_t Id) {
+static int  binarySearch(vec vec, int min, size_t max, size_t Id) {
+     if (min > max){
+        return -1;
+    }
     while (min <= max) {
-        size_t mid = min+(max - min)/2;
+        int mid = min+(max - min)/2;
         if (vec[mid].stationId == Id)
             return mid;
         if (vec[mid].stationId < Id)
@@ -274,8 +277,8 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
     if(ADT->order != ID){
          orderByids(ADT);
     }
-   size_t newIdStart = binarySearch(ADT->Stations,0,ADT->stationQty-1,idStart);
-    size_t newIdEnd  = binarySearch(ADT->Stations,0,ADT->stationQty-1,idEnd);
+    int newIdStart = binarySearch(ADT->Stations,0,ADT->stationQty-1,idStart);
+    int newIdEnd  = binarySearch(ADT->Stations,0,ADT->stationQty-1,idEnd);
     if( newIdEnd == -1 || newIdStart == -1 ) {
         return;
     }
@@ -367,7 +370,4 @@ void freeTad(bikeRentingADT ADT) {
     free(ADT->matriz);
     free(ADT->Stations);
     free(ADT);
-}
-void imprimir(bikeRentingADT ADT){
-    printf("%ld\n",ADT->stationQty);
 }
