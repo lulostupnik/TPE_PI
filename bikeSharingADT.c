@@ -309,15 +309,13 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
     }
     int idxStart = binarySearch(ADT->vecStations,0,ADT->stationQty-1,idStart); //Guarda en idxStart el indice del vector en donde se encuentra el ID enviado (idStart).
     int idxEnd  = binarySearch(ADT->vecStations,0,ADT->stationQty-1,idEnd); //Guarda en idxEnd el indice del vector en donde se encuentra el ID enviado (idEnd). 
-    //Si alguno de las dos estaciones no existe, no agregamos el viaje.
+    //Si alguno de las dos estaciones no existe, o si el parametro de months es incorrecto, no agregamos el viaje.
     if( idxEnd == -1 || idxStart == -1 || month < 1 || month > 12) {
         return 1;
     }
 
     if( ADT->firstRead == 1){
-
         tRows * aux;
-       
         aux = realloc(ADT->matrix,ADT->stationQty * sizeof(tRows));
         if(aux == NULL || errno == ENOMEM){                    // si me quedo sin memoria libero lo ya reallocado.
             return -1;
@@ -427,7 +425,7 @@ int hasNextStartQ2(bikeRentingADT ADT){
     if(ADT->iterators.q2_i < ADT->oldSizeOfmatrix && ADT->matrix[ADT->iterators.q2_i].name != NULL){
         return 1;
     }
-    return 0;//ADT->iterators.q2_i < ADT->oldSizeOfmatrix;
+    return 0;//ADT->iterators.q2_i >= ADT->oldSizeOfmatrix;
 }
 
 int hasNextDestinationQ2(bikeRentingADT ADT){
