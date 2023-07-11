@@ -43,18 +43,18 @@ bikeRentingADT TadStations = newBikesRenting();
     }
 
 // APERTURA DE LOS ARCHIVOS 
-FILE * dataStations = fopen("../EXCELS/stationsMON.csv","r"); //CAMBIAR POR argv[]
-FILE * dataBikes = fopen("../EXCELS/bikesMON.csv","r"); //CAMBIAR POR argv[]
+FILE * dataStations = fopen("/home/neax/Final pi/Last/stationsMON.csv","r"); //CAMBIAR POR argv[]
+FILE * dataBikes = fopen("/home/neax/Final pi/Last/bikesMON.csv","r"); //CAMBIAR POR argv[]
 
 FILE * CSVquery1 = fopen("query1.csv","w"); 
 htmlTable HTquery1 = newTable("query1.html", 2, "Station", "StartedTrips"); 
-/*
+
 FILE * CSVquery2 = fopen("query2.csv", "w"); 
-htmlTable HTquery2 = newTable("query2.html", 4, "StationA","StationB","Trips A->B", "Trips B->A" ); 
+htmlTable HTquery2 = newTable("query2.html", 4, "StationA","StationB","Trips A->B", "Trips B->A" );
 
 FILE * CSVquery3 = fopen("query3.csv", "w");
-htmlTable HTquery3 = newTable("query3.html", 13, "J","F","M","A","M","J","J","A","S","O","N","D","Station"); 
-
+htmlTable HTquery3 = newTable("query3.html", 13, "J","F","M","A","M","J","J","A","S","O","N","D","Station");
+/*
 size_t quantFiles = TOTAL_FILES + TOTAL_QUERIES; 
 
 FILE * fileFolder[] = {dataStations, dataBikes, CSVquery1,CSVquery2, CSVquery3}; 
@@ -70,8 +70,8 @@ readDataBikes(dataBikes,TadStations);
 // CARGO LOS QUERIES 
 
 loadQuery1(TadStations, CSVquery1, HTquery1);
-//loadQuery2(TadStations, CSVquery2, HTquery2);
-//loadQuery3(TadStations, CSVquery3, HTquery3);
+loadQuery2(TadStations, CSVquery2, HTquery2);
+loadQuery3(TadStations, CSVquery3, HTquery3);
 
 freeTad(TadStations);
 }
@@ -172,36 +172,36 @@ int loadQuery1 (bikeRentingADT ADT, FILE * CSVquery1, htmlTable HTquery1){
     closeHTMLTable(HTquery1);
     return 0;
 }
-/*
+
 int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
-    orderByName(ADT);
-    size_t size = getsizeOfMatrix(ADT);
-    size_t travelsTo;
-    size_t travelsFrom;
-    char * nameEnd;
-    char * travelsToString;
-    char * travelsFromString;
-    char * nameStart;
+    toBeginQ2(ADT);
+    size_t travelsTo,travelsFrom;
+    char * stationB,* stationA,* travelsFromString,* travelsToString;
     fprintf(CSVquery2,"StationA;StationB;Trips A->B;Trips B->A\n"); //Titulos Columnas CSV
-     for ( size_t i = 0; i < size; i++) {
-        nameStart = getNameByPosition(ADT,i);
-        for( size_t j = 0; j < size; j++){
-            travelsTo = getTravelsTo(ADT,i,j);
-            travelsFrom = getTravelsFrom(ADT,i,j);
-            nameEnd = getNameFromMatrix(ADT,i,j);
+    while(hasNextQ2(ADT)){
+        printf("entre\n");
+        stationA = startStationName(ADT);
+        while(hasNextDestinationQ2(ADT)){
+            travelsTo = getTravelsToQ2(ADT);
+            travelsFrom = getTravelsFromQ2(ADT);
             if( travelsFrom != 0 || travelsTo !=0){
+                stationB = getNameOfDestination(ADT);
                 travelsToString = intToString(travelsTo);
                 travelsFromString = intToString(travelsFrom);
-                addHTMLRow(HTquery2,nameStart,nameEnd,travelsToString,travelsFromString); //Voy imprimiendo el HTML (chequear orden de parametros)
-                int query2Ans = fprintf(CSVquery2,"%s;%s;%zu;%zu\n",nameStart,nameEnd,travelsTo,travelsFrom); //Voy imprimiend el CSV
+                addHTMLRow(HTquery2,stationA,stationB,travelsToString,travelsFromString); //Voy imprimiendo el HTML (chequear orden de parametros)
+                int query2Ans = fprintf(CSVquery2,"%s;%s;%zu;%zu\n",stationA,stationB,travelsTo,travelsFrom); //Voy imprimiend el CSV
                 free(travelsToString);
                 free(travelsFromString);
+                free(stationB);
                 if( query2Ans < 0){
                     //ERROR
                 }
              }
-
+        
+        nextDestinationQ2(ADT);
         }
+    free(stationA);
+    nextQ2(ADT);
     }
 //FUNCIONO 
     fclose(CSVquery2);
@@ -210,14 +210,13 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
 }
 
 int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
-    orderByName(ADT);
-    size_t size = getNumberOfStations(ADT);
+    toBeginQ3(ADT);
     size_t travels[12];
     char * name;
     char * months[12];
-    for (size_t i = 0 ; i < size; i++) {
-        getTravelsByMoth(ADT,i,travels);
-        name = getNameByPosition(ADT,i);
+    while(hasNextQ3(ADT)){
+        getTravelsByMoth(ADT,travels);
+        name = getNameQ3(ADT);
         for( int i = 0; i < 12 ; i++){
             months[i] = intToString(travels[i]);
         }
@@ -229,10 +228,11 @@ int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
         for( int i = 0; i < 12 ; i++){
             free(months[i]);
         }
+        free(name);
+        nextQ3(ADT);
     }
     //FUNCIONO
     fclose(CSVquery3);
     closeHTMLTable(HTquery3);
     return 0;
 }
-*/

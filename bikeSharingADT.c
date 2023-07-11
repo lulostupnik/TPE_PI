@@ -1,6 +1,7 @@
 #include "ADT.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <strings.h>
 #include <string.h>
 #include <ctype.h>
@@ -10,14 +11,13 @@
 typedef struct destino{
     char * name;
     size_t travelsTo;
+    size_t nameLen;
     size_t travelsFrom;
 }tDestino;
 
 typedef struct matrix{
    tDestino* Travels;
    char * name;
-   size_t totalTravelsTo;
-   size_t totalTravelsFrom;
    
 }tMatrix;
 
@@ -35,7 +35,9 @@ typedef enum {UNORDERED=0, ID, NAME, TRIPS} tOrder;
 
 typedef struct iterators{
     size_t q1_i;
-    
+    size_t q2_i;
+    size_t q2_j;
+    size_t q3_i;
 }tIterators;
 
 
@@ -100,9 +102,9 @@ size_t getTravelsFrom(bikeRentingADT ADT,size_t row,size_t col){
     return ADT->matriz[row].Travels[col].travelsFrom;
 }
 
-void getTravelsByMoth(bikeRentingADT ADT,size_t position,size_t travels[]){
+void getTravelsByMoth(bikeRentingADT ADT,size_t travels[]){
     for( size_t i = 0; i < MONTHS; i++){
-        travels[i] = ADT->Stations[position].Months[i];
+        travels[i] = ADT->Stations[ADT->iterators.q3_i].Months[i];
     }
 }
 
@@ -113,8 +115,6 @@ char* getNameFromMatrix(bikeRentingADT ADT,size_t row,size_t col){
 size_t getsizeOfMatrix(bikeRentingADT ADT){
     return ADT->oldSizeOfMatriz;
 }
-
-
 
 
 
@@ -134,9 +134,13 @@ static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
             matriz[i].Travels[j].name = NULL;
            matriz[i].Travels[j].travelsFrom = 0;
            matriz[i].Travels[j].travelsTo = 0;
+            matriz[i].Travels[j].nameLen = 0;
            matriz[j].Travels[i].name = NULL;
            matriz[j].Travels[i].travelsFrom = 0;
            matriz[j].Travels[i].travelsTo = 0;
+           matriz[j].Travels[i].nameLen = 0;
+         
+           
     }
     }
     for(size_t i=*oldSize;i<dim;i++){
@@ -144,6 +148,7 @@ static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
             matriz[i].Travels[j].name = NULL;
            matriz[i].Travels[j].travelsFrom = 0;
            matriz[i].Travels[j].travelsTo = 0;
+           matriz[i].Travels[j].nameLen = 0;
     }
     }
 
@@ -157,11 +162,6 @@ if(flag == 1){
    for( size_t i = 0; i < dim; i++){
         matriz[i].Travels=calloc(dim,sizeof(tDestino));
         matriz[i].name = NULL;
-        for( size_t j=0; j < dim; j++){
-           matriz[i].Travels[j].name = NULL;
-           matriz[i].Travels[j].travelsFrom = 0;
-           matriz[i].Travels[j].travelsTo = 0;
-        }  
     }
 }else{
         for( size_t i=0; i < dim; i++){
@@ -174,7 +174,7 @@ if(flag == 1){
 
 
 
-static int  binarySearch(vec vec, int min, size_t max, size_t Id) {
+static int  binarySearch(vec vec, int min, int max, size_t Id) {
      if (min > max){
         return -1;
     }
@@ -218,7 +218,7 @@ static int compare_ids(const void * a, const void * b){
     return (station1->stationId-station2->stationId);
 }
 
-static void orderByName(bikeRentingADT ADT){
+static void sortByName(bikeRentingADT ADT){
     qsort(ADT->Stations,ADT->stationQty,sizeof(tStation),compare_stations);
     qsort(ADT->matriz,ADT->oldSizeOfMatriz,sizeof(tMatrix),compare_matrix);
        for( size_t i = 0; i < ADT->oldSizeOfMatriz; i++){
@@ -308,8 +308,8 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
     char * nameStart = ADT->Stations[newIdStart].stationName;
     if( ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo==0 && ADT->matriz[newIdStart].Travels[newIdEnd].travelsFrom == 0){
         ADT->matriz[newIdStart].Travels[newIdEnd].name=nameEnd;
+        ADT->matriz[newIdStart].Travels[newIdEnd].nameLen=ADT->Stations[newIdEnd].nameLen;
         ADT->matriz[newIdStart].name=nameStart;
-        ADT->matriz[newIdStart].totalTravelsTo++;
         ADT->matriz[newIdEnd].Travels[newIdStart].name = nameStart;
         ADT->matriz[newIdEnd].name = nameEnd;
     }
@@ -355,8 +355,87 @@ void nextQ1(bikeRentingADT ADT){
     ADT->iterators.q1_i++;
 }
 
+void toBeginQ2(bikeRentingADT ADT){
+    sortByName(ADT);
+    ADT->iterators.q2_i = 0;
+    ADT->iterators.q2_j = 0;
 
+}
 
+int hasNextQ2(bikeRentingADT ADT){
+    return ADT->iterators.q2_i < ADT->oldSizeOfMatriz;
+}
+
+int hasNextDestinationQ2(bikeRentingADT ADT){
+    return ADT->iterators.q2_j < ADT->oldSizeOfMatriz;
+}
+
+size_t getTravelsToQ2(bikeRentingADT ADT){
+    return ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].travelsTo;
+}
+size_t getTravelsFromQ2(bikeRentingADT ADT){
+    return ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].travelsFrom;
+}
+
+char * getNameOfDestination(bikeRentingADT ADT){
+    if(!hasNextQ2(ADT)){
+        return NULL;
+    }
+    for(int i = 0 ; i < ADT->oldSizeOfMatriz;i++){
+        if(ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].name != NULL){
+            char * aux = malloc(ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].nameLen + 1);
+            if(aux == NULL || errno == ENOMEM){
+        return NULL;
+         }
+        ADT->iterators.q2_j=i;
+        return strcpy(aux, ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].name);
+        }
+    }
+    ADT->iterators.q2_j=0;
+}
+
+char * startStationName(bikeRentingADT ADT){
+     if(!hasNextQ2(ADT)){
+        return NULL;
+    }
+    char * aux = malloc(ADT->Stations[ADT->iterators.q2_i].nameLen + 1);
+    if(aux == NULL || errno == ENOMEM){
+        return NULL;
+    }
+    return strcpy(aux, ADT->Stations[ADT->iterators.q2_i].stationName);
+}
+
+void nextQ2(bikeRentingADT ADT){
+    ADT->iterators.q2_i++;
+    ADT->iterators.q2_j=0;
+}
+
+void nextDestinationQ2(bikeRentingADT ADT){
+    ADT->iterators.q2_j++;
+}
+
+void toBeginQ3(bikeRentingADT ADT){
+    sortByName(ADT);
+    ADT->iterators.q3_i = 0;
+}
+int hasNextQ3(bikeRentingADT ADT){
+    return ADT->iterators.q3_i < ADT->stationQty;
+}
+
+char * getNameQ3(bikeRentingADT ADT){
+    if(!hasNextQ3(ADT)){
+        return NULL;
+    }
+    char * aux = malloc(ADT->Stations[ADT->iterators.q3_i].nameLen + 1);
+    if(aux == NULL || errno == ENOMEM){
+        return NULL;
+    }
+    return strcpy(aux, ADT->Stations[ADT->iterators.q3_i].stationName);
+}
+
+void nextQ3(bikeRentingADT ADT){
+    ADT->iterators.q3_i++;
+}
 
 
 
