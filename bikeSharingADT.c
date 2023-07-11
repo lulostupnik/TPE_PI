@@ -1,4 +1,4 @@
-#include "ADT.h"
+#include "bikeSharingADT.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -331,7 +331,6 @@ void toBeginQ1(bikeRentingADT ADT){
     if(ADT->order != TRIPS){
         sortByTrips(ADT);
     }
-    
     ADT->iterators.q1_i = 0;
 }
 
@@ -356,7 +355,7 @@ char * getNameQ1(bikeRentingADT ADT){
 
 size_t getTripsQ1(bikeRentingADT ADT){
     if(!hasNextQ1(ADT)){
-        return -1; // Le retornamos basura (aunque sea size_t, que devuelva lo que sea -1)
+        return -1; // Le retornamos basura (aunque sea size_t, retornamos -1)
     }
     return ADT->vecStations[ADT->iterators.q1_i].tripsByMembers;
 }
@@ -406,9 +405,15 @@ int hasNextDestinationQ2(bikeRentingADT ADT){
 
 
 size_t getTripsToQ2(bikeRentingADT ADT){
+    if(!hasNextStartQ2(ADT) || !hasNextDestinationQ2(ADT)){
+        return -1;
+    }
     return ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].tripsTo;
 }
 size_t getTripsFromQ2(bikeRentingADT ADT){
+    if(!hasNextStartQ2(ADT) || !hasNextDestinationQ2(ADT)){
+        return -1;
+    }
     return ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].tripsFrom;
 }
 
