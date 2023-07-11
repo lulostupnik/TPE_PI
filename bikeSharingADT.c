@@ -61,8 +61,8 @@ typedef struct bikeRentingCDT{
     tRows * matrix;                    // Una matriz dinamica que guarda los viajes realizados entre estaciones. 
     size_t oldSizeOfmatrix;            // El tamaño de la matriz 
     
-    size_t firstRead;                  //Actua como un flag para saber si es la primera lectura del archivo
-    tOrder order;                      //Identificador de Orden de Matriz y Vector. 
+    size_t firstRead;                  //Actua como un flag para saber si ya se llamo alguna vez a process data despues de haber agregado una estacion 
+    tOrder order;                      //Identificador del  orden actual de la Matriz y el Vector.  
     tIterators iterators;              //La estructura que guarda los iteradores para realizar los queries. 
 
 }tBikeRentingCDT;
