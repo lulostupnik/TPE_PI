@@ -56,7 +56,7 @@ static int compare_ids(const void * a, const void * b);
 static int SearchForRepeated(vec vec,size_t size, size_t id);
 static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize);
 static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize);
-static int  binarySearch(vec vec, size_t min, size_t max, size_t Id);
+static int  binarySearch(vec vec, int min, int max, size_t Id);
 static void startMonthsInZero(size_t months[12]);
 static int compare_destinos(const void *a, const void *b);
 static void orderByName(bikeRentingADT ADT);
