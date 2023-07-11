@@ -21,7 +21,7 @@ typedef enum {OK=0,WRONG_AMOUNT_OF_ARGUMENTS,WRONG_PATH,NOT_CREATED,NO_MEM,PRINT
 
 int readDataStations(FILE * dataStations,bikeRentingADT TadStations);
 int readDataBikes( FILE * dataBikes,bikeRentingADT TadStations);
-void handleErrors(bikeRentingADT tad,mainErrors exitCode,char * error);
+void handleErrors(mainErrors exitCode,const char * error,bikeRentingADT tad);
 int loadQuery3 (bikeRentingADT tad, FILE * CSVquery3, htmlTable HTquery3);
 int loadQuery1 (bikeRentingADT tad, FILE * CSVquery2, htmlTable HTquery2);
 int loadQuery2 (bikeRentingADT tad, FILE * CSVquery1, htmlTable HTquery1);
@@ -163,7 +163,7 @@ bikeRentingADT TAD = newBikesRenting();
                     j++;
                     token=strtok(NULL,delim);
                 }
-                flag=addStation(name,id,TAD);
+                flag=addStation(TAD,name,id);
                 if(flag == -1 || errno == ENOMEM){
                     return NO_MEM;
                 }
@@ -213,7 +213,7 @@ bikeRentingADT TAD = newBikesRenting();
         char * name;
         char * travelString;
         toBeginQ1(ADT);
-        flag=fprintf(CSVquery1, "Station;StartedTrips\n"); 
+        flag=fprintf(CSVquery1,"Station;StartedTrips\n"); 
         if(flag < 0){
             return PRINT_ERROR;
         }
@@ -255,8 +255,8 @@ bikeRentingADT TAD = newBikesRenting();
                 return NO_MEM;
             }
             while(hasNextDestinationQ2(ADT)){
-                travelsTo = getTravelsToQ2(ADT);
-                travelsFrom = getTravelsFromQ2(ADT);
+                travelsTo = getTripsToQ2(ADT);
+                travelsFrom = getTripsFromQ2(ADT);
                 stationB = getNameOfDestinationQ2(ADT);
                 if(stationB == NULL){
                     free(stationA);
@@ -299,7 +299,7 @@ bikeRentingADT TAD = newBikesRenting();
             return PRINT_ERROR;
         }
         while(hasNextQ3(ADT)){
-            getTravelsByMonthQ3(ADT,travels);
+            getTripsByMonthQ3(ADT,travels);
             name = getNameQ3(ADT);
             if(name == NULL){
                 return NO_MEM;
@@ -323,8 +323,8 @@ bikeRentingADT TAD = newBikesRenting();
         return 0;
     }
 
-void handleErrors(bikeRentingADT ADT,mainErrors exitCode,char * Error){
-    fprintf(stderr, Error);
+void handleErrors(mainErrors exitCode, const char * Error,bikeRentingADT ADT){
+    fprintf(stderr,"%s\n",Error);
     freeTad(ADT);
     exit(exitCode);
 }

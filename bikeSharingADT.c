@@ -480,13 +480,14 @@ void nextQ3(bikeRentingADT ADT){
 }
 
 
-void gettripsByMonthQ3(bikeRentingADT ADT,size_t tripsVec[]){
+void getTripsByMonthQ3(bikeRentingADT ADT,size_t tripsVec[]){
     for( size_t i = 0; i < MONTHS; i++){
         tripsVec[i] = ADT->vecStations[ADT->iterators.q3_i].monthsVec[i];
     }
 }
 
 void freeTad(bikeRentingADT ADT) {
+    if(ADT != NULL){
     for( size_t i = 0; i < ADT->stationQty; i++) {
         free(ADT->vecStations[i].name);   
     }
@@ -496,4 +497,4 @@ void freeTad(bikeRentingADT ADT) {
     free(ADT->matrix);
     free(ADT->vecStations);
     free(ADT);
-}
+}}
