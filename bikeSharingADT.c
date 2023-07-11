@@ -5,13 +5,14 @@
 #include <strings.h>
 #include <string.h>
 #include <ctype.h>
+
 #define BLOCK 500
 #define MONTHS 12
 
 typedef struct destino{
     char * name;
-    size_t travelsTo;
     size_t nameLen;
+    size_t travelsTo;
     size_t travelsFrom;
 }tDestino;
 
@@ -59,7 +60,7 @@ static void sortByTrips(bikeRentingADT ADT);
 static int compare_ids(const void * a, const void * b);
 static int SearchForRepeated(vec vec,size_t size, size_t id);
 static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize);
-static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize);
+static int matrizMalloc(tMatrix * matriz, size_t dim,size_t * oldSize);
 static int  binarySearch(vec vec, int min, int max, size_t Id);
 static void startMonthsInZero(size_t months[MONTHS]);
 static int compare_destinos(const void *a, const void *b);
@@ -97,6 +98,7 @@ static int SearchForRepeated(vec vec,size_t size, size_t id){
     return -1;
 }
 
+
 static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
     tDestino aux = {NULL,0,0,0};
     for (size_t i = 0; i < *oldSize;i++){
@@ -112,24 +114,29 @@ static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
     }
 }
 
-static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize){
-if(flag == 1){
-   for( size_t i = 0; i < dim; i++){
-        matriz[i].Travels=calloc(dim,sizeof(tDestino));
-        matriz[i].name = NULL;
-        
-    }
-}else{
+
+static int matrizMalloc(tMatrix * matriz, size_t dim,size_t * oldSize){
+    errno = 0;
     tMatrix aux = {NULL, NULL, 0};
     for(int i=*oldSize;i<dim;i++){
         matriz[i] = aux;
     }
-    for( size_t i=0; i < dim; i++){
-        matriz[i].Travels=realloc(matriz[i].Travels,dim * sizeof(tDestino));
-    }
+
+    tDestino * auxDestino;
+        for( size_t i=0; i < dim; i++){
+            auxDestino=realloc(matriz[i].Travels,dim * sizeof(tDestino));
+            if(auxDestino == NULL || errno == ENOMEM){                    // si me quedo sin memoria libero lo ya reallocado.
+                for(int j=0; j < i;j++){
+                    free(matriz[j].Travels); // ARREGLAR
+                }
+                free(auxDestino); //errno test
+                return 0;
+            }
+            matriz[i].Travels=auxDestino;
+        }
     fillWithzeros(matriz,dim,oldSize);
-}
-    (*oldSize)=dim;
+    *oldSize=dim;
+    return 1;
 }
 
 
@@ -209,20 +216,25 @@ void orderByids(bikeRentingADT ADT){
 }
 
 bikeRentingADT newBikesRenting(void){
+    errno = 0;
    return calloc(1, sizeof(tBikeRentingCDT));
 }
 
 int addStation(char *name,size_t id,bikeRentingADT ADT) {
+    errno = 0;
     if(SearchForRepeated(ADT->Stations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega       
         size_t nameLenAux = strlen(name);
         char * nameAux = malloc(nameLenAux + 1);
         if(nameAux == NULL || errno == ENOMEM){
+            free(nameAux); //Lo pongo para testear cambiando el valor de errno (El caso que errno sea ENOMEM, pero nameAux no es NULL)
+            // errno test
             return -1;
         }
         strcpy(nameAux, name);
-
+        
         vec aux =  realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation));
         if(aux == NULL || errno == ENOMEM){
+            free(aux); //testeo
             free(nameAux);
             return -1;
         }
@@ -246,7 +258,9 @@ int addStation(char *name,size_t id,bikeRentingADT ADT) {
 }
 
 int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
+    errno = 0;
     int flag;
+    
     if(ADT->order != ID){
          orderByids(ADT);
     }
@@ -258,9 +272,20 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
     }
 
     if( ADT->firstRead == 1){
-        flag = (ADT->matriz == NULL); 
-        ADT->matriz = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
-        matrizMalloc(ADT->matriz,ADT->stationQty,flag,&(ADT->oldSizeOfMatriz));
+
+        tMatrix * aux;
+       
+        aux = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
+        if(aux == NULL || errno == ENOMEM){                    // si me quedo sin memoria libero lo ya reallocado.
+            free(aux); // errno test
+            return -1;
+        }
+        
+        if(!matrizMalloc(aux,ADT->stationQty,&(ADT->oldSizeOfMatriz))){
+            free(aux);
+            return -1;
+        }
+        ADT->matriz=aux;
         ADT->firstRead = 0;
     }
  
@@ -313,11 +338,13 @@ int hasNextQ1(bikeRentingADT ADT){
 
 //Devuelve NULL si no hay memoria para copiarlo, o si no hay next.
 char * getNameQ1(bikeRentingADT ADT){
+    errno = 0;
     if(!hasNextQ1(ADT)){
         return NULL;
     }
     char * aux = malloc(ADT->Stations[ADT->iterators.q1_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
+        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->Stations[ADT->iterators.q1_i].stationName);
@@ -342,6 +369,7 @@ void nextQ1(bikeRentingADT ADT){
 
 
 void toBeginQ2(bikeRentingADT ADT){
+    
     if(ADT->order != NAME){
         sortByName(ADT);
     }
@@ -350,7 +378,7 @@ void toBeginQ2(bikeRentingADT ADT){
 
 }
 
-int hasNextQ2(bikeRentingADT ADT){
+int hasNextStartQ2(bikeRentingADT ADT){
     if(ADT->iterators.q2_i < ADT->oldSizeOfMatriz && ADT->matriz[ADT->iterators.q2_i].name != NULL){
         return 1;
     }
@@ -380,30 +408,33 @@ size_t getTravelsFromQ2(bikeRentingADT ADT){
     return ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].travelsFrom;
 }
 
-char * getNameOfDestination(bikeRentingADT ADT){
-    if(!hasNextQ2(ADT)){
+char * getNameOfDestinationQ2(bikeRentingADT ADT){
+    if(!hasNextStartQ2(ADT) || !hasNextDestinationQ2(ADT)){
         return NULL;
     }
     char * aux = malloc(ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
+        free(aux); // errno test
        return NULL;
     }
     return strcpy(aux, ADT->matriz[ADT->iterators.q2_i].Travels[ADT->iterators.q2_j].name);
 
 }
 
-char * startStationName(bikeRentingADT ADT){
-     if(!hasNextQ2(ADT)){
+char * getNameOfStartQ2(bikeRentingADT ADT){
+    errno = 0;
+     if(!hasNextStartQ2(ADT)){
         return NULL;
     }
     char * aux = malloc(ADT->matriz[ADT->iterators.q2_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
+        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->matriz[ADT->iterators.q2_i].name);
 }
 
-void nextQ2(bikeRentingADT ADT){
+void nextStartStationQ2(bikeRentingADT ADT){
     ADT->iterators.q2_i++;
     ADT->iterators.q2_j=0;
 }
@@ -435,11 +466,13 @@ int hasNextQ3(bikeRentingADT ADT){
 }
 
 char * getNameQ3(bikeRentingADT ADT){
+    errno = 0;
     if(!hasNextQ3(ADT)){
         return NULL;
     }
     char * aux = malloc(ADT->Stations[ADT->iterators.q3_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
+        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->Stations[ADT->iterators.q3_i].stationName);
@@ -450,7 +483,7 @@ void nextQ3(bikeRentingADT ADT){
 }
 
 
-void getTravelsByMonth(bikeRentingADT ADT,size_t travels[]){
+void getTravelsByMonthQ3(bikeRentingADT ADT,size_t travels[]){
     for( size_t i = 0; i < MONTHS; i++){
         travels[i] = ADT->Stations[ADT->iterators.q3_i].Months[i];
     }

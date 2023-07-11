@@ -186,8 +186,8 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
     char * stationB  ,* stationA,* travelsFromString,* travelsToString;
     fprintf(CSVquery2,"StationA;StationB;Trips A->B;Trips B->A\n"); //Titulos Columnas CSV
 
-    while(hasNextQ2(ADT)){
-        stationA = startStationName(ADT);
+    while(hasNextStartQ2(ADT)){
+        stationA = getNameOfStartQ2(ADT);
         while(hasNextDestinationQ2(ADT)){
             travelsTo = getTravelsToQ2(ADT);
             travelsFrom = getTravelsFromQ2(ADT);
@@ -207,7 +207,7 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
         nextDestinationQ2(ADT);
         }
     free(stationA);
-    nextQ2(ADT);
+    nextStartStationQ2(ADT);
     }
 //FUNCIONO 
     fclose(CSVquery2);

@@ -180,12 +180,12 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
     char * stationB  ,* stationA,* travelsFromString,* travelsToString;
     fprintf(CSVquery2,"StationA;StationB;Trips A->B;Trips B->A\n"); //Titulos Columnas CSV
 
-    while(hasNextQ2(ADT)){
-        stationA = startStationName(ADT);
+    while(hasNextStartQ2(ADT)){
+        stationA = getNameOfStartQ2(ADT);
         while(hasNextDestinationQ2(ADT)){
             travelsTo = getTravelsToQ2(ADT);
             travelsFrom = getTravelsFromQ2(ADT);
-            stationB = getNameOfDestination(ADT);
+            stationB = getNameOfDestinationQ2(ADT);
             travelsToString = intToString(travelsTo);
             travelsFromString = intToString(travelsFrom);
             addHTMLRow(HTquery2,stationA,stationB,travelsToString,travelsFromString); //Voy imprimiendo el HTML (chequear orden de parametros)
@@ -201,7 +201,7 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
         nextDestinationQ2(ADT);
         }
     free(stationA);
-    nextQ2(ADT);
+    nextStartStationQ2(ADT);
     }
 //FUNCIONO 
     fclose(CSVquery2);
@@ -216,7 +216,7 @@ int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
     char * months[MONTHS];
     fprintf(CSVquery3,"J;F;M;A;M;J;J;A;S;O;N;D;Station\n");
     while(hasNextQ3(ADT)){
-        getTravelsByMonth(ADT,travels);
+        getTravelsByMonthQ3(ADT,travels);
         name = getNameQ3(ADT);
         for( int i = 0; i < MONTHS ; i++){
             months[i] = intToString(travels[i]);
