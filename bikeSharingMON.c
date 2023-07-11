@@ -15,6 +15,7 @@
 #define TOTAL_QUERIES 3
 #define TOTAL_FILES 2 
 #define INVALID -1 
+#define MONTHS 12 
 
 void readDataStations(FILE * dataStations,bikeRentingADT TadStations);
 void readDataBikes( FILE * dataBikes,bikeRentingADT TadStations);
@@ -211,13 +212,13 @@ int loadQuery2 (bikeRentingADT ADT, FILE * CSVquery2, htmlTable HTquery2){
 
 int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
     toBeginQ3(ADT);
-    size_t travels[12];
+    size_t travels [MONTHS];
     char * name;
-    char * months[12];
+    char * months[MONTHS];
     while(hasNextQ3(ADT)){
-        getTravelsByMoth(ADT,travels);
+        getTravelsByMonth(ADT,travels);
         name = getNameQ3(ADT);
-        for( int i = 0; i < 12 ; i++){
+        for( int i = 0; i < MONTHS ; i++){
             months[i] = intToString(travels[i]);
         }
         addHTMLRow(HTquery3,months[0],months[1],months[2],months[3],months[4],months[5],months[6],months[7],months[8],months[9],months[10],months[11],name); //Voy imprimiendo el HTML
@@ -225,7 +226,7 @@ int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
         if(query3Ans < 0){
                 //Error
         }
-        for( int i = 0; i < 12 ; i++){
+        for( int i = 0; i < MONTHS ; i++){
             free(months[i]);
         }
         free(name);

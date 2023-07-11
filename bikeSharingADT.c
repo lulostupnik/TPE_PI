@@ -102,7 +102,7 @@ size_t getTravelsFrom(bikeRentingADT ADT,size_t row,size_t col){
     return ADT->matriz[row].Travels[col].travelsFrom;
 }
 
-void getTravelsByMoth(bikeRentingADT ADT,size_t travels[]){
+void getTravelsByMonth(bikeRentingADT ADT,size_t travels[]){
     for( size_t i = 0; i < MONTHS; i++){
         travels[i] = ADT->Stations[ADT->iterators.q3_i].Months[i];
     }

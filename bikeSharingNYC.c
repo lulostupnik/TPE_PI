@@ -14,6 +14,7 @@
 #define TOTAL_QUERIES 3
 #define TOTAL_FILES 2 
 #define INVALID -1 
+#define MONTHS 12
 
 void readDataStations(FILE * dataStations,bikeRentingADT TadStations);
 void readDataBikes( FILE * dataBikes,bikeRentingADT TadStations);
@@ -152,23 +153,30 @@ void readDataBikes( FILE * dataBikes,bikeRentingADT ADT){
 }
 
 int loadQuery1 (bikeRentingADT ADT, FILE * CSVquery1, htmlTable HTquery1){
-    sortTravels(ADT);
-    size_t size = getNumberOfStations(ADT);
     size_t travels;
     char * name;
     char * travelString;
-    fprintf(CSVquery1, "Station;StartedTrips\n"); //Titulos Columnas CSv
-    for( size_t i = 0; i < size; i++){
-        travels = getTravels(ADT,i);
-        name = getNameByPosition(ADT,i);
-        travelString=intToString(travels);
-        addHTMLRow(HTquery1, name, travelString); //Voy Imprimiendo el HTML
-        int query1Ans = fprintf(CSVquery1,"%s;%zu\n",name,travels); //Voy Imprimiendo el CSV
+
+    toBeginQ1(ADT);
+    fprintf(CSVquery1, "Station;StartedTrips\n"); //Titulos Columnas CSV
+
+    while(hasNextQ1(ADT)){
+        travels = getTripsQ1(ADT);
+        name = getNameQ1(ADT);
+        travelString = intToString(travels);
+        if(name == NULL || travelString == NULL || errno == ENOMEM){
+            free(travelString);
+            free(name); // Libero ambos por si uno es NULL y el otro no. 
+            return -1;
+        }   
+        addHTMLRow(HTquery1,name,travelString); //Voy Imprimiendo el HTML
+        int query1Ans = fprintf(CSVquery1,"%s;%zu\n",name, travels); //Voy Imprimiendo el CSV
         if(query1Ans < 0){
             //ERROR 
         }
         free(travelString);
-       
+        free(name);
+        nextQ1(ADT);
     }
     //FUNCIONO
     closeHTMLTable(HTquery1);
@@ -211,27 +219,29 @@ int loadQuery2(bikeRentingADT ADT, FILE* CSVquery2, htmlTable HTquery2){
 }
 
 int loadQuery3 (bikeRentingADT ADT, FILE * CSVquery3, htmlTable HTquery3){
-  orderByName(ADT);
-    size_t size = getNumberOfStations(ADT);
-    size_t travels[12];
-    char* name;
-    char * months[12];
-    for ( size_t i=0; i < size; i++) {
-        getTravelsByMoth(ADT, i,travels);
-        name = getNameByPosition(ADT,i);
-         for( int i = 0; i < 12 ; i++){
+     toBeginQ3(ADT);
+    size_t travels [MONTHS];
+    char * name;
+    char * months[MONTHS];
+    while(hasNextQ3(ADT)){
+        getTravelsByMonth(ADT,travels);
+        name = getNameQ3(ADT);
+        for( int i = 0; i < MONTHS ; i++){
             months[i] = intToString(travels[i]);
         }
-       addHTMLRow(HTquery3,months[0],months[1],months[2],months[3],months[4],months[5],months[6],months[7],months[8],months[9],months[10],months[11],name); //Voy imprimiendo el HTML
-        int query3Ans = fprintf(CSVquery3, "%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%s\n",travels[0],travels[1],travels[2],travels[3],travels[4],travels[5],travels[6],travels[7],travels[8],travels[9],travels[10],travels[11],name); //Voy imprimiendo el CSV
-        for( int i = 0; i < 12 ; i++){
+        addHTMLRow(HTquery3,months[0],months[1],months[2],months[3],months[4],months[5],months[6],months[7],months[8],months[9],months[10],months[11],name); //Voy imprimiendo el HTML
+        int query3Ans = fprintf(CSVquery3,"%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%zu;%s\n",travels[0],travels[1],travels[2],travels[3],travels[4],travels[5],travels[6],travels[7],travels[8],travels[9],travels[10],travels[11],name); //Voy imprimiendo el CSV
+        if(query3Ans < 0){
+                //Error
+        }
+        for( int i = 0; i < MONTHS ; i++){
             free(months[i]);
         }
-        if(query3Ans < 0){
-            //Error
-        }
+        free(name);
+        nextQ3(ADT);
     }
 //FUNCIONO
-closeHTMLTable(HTquery3);
-fclose(CSVquery3);
+    fclose(CSVquery3);
+    closeHTMLTable(HTquery3);
+   
 }
