@@ -172,8 +172,7 @@ static int matrixColsAlloc(tRows * matrix, size_t dim,size_t * oldSize){
             if(auxDestino == NULL || errno == ENOMEM){                // si me quedo sin memoria libero lo ya reallocado.
                 for(int j=0; j < i;j++){
                     free(matrix[j].cols);
-                }
-                free(auxDestino); //Hago este free por si entro al if debido a que errno = ENOMEM. 
+                } 
                 return 0;
             }
             matrix[i].cols=auxDestino; //Le genero el espacio a la matriz. 
@@ -275,20 +274,17 @@ int addStation(bikeRentingADT ADT, char *name,size_t id) {
         size_t nameLenAux = strlen(name);
         char * nameAux = malloc(nameLenAux + 1);
         if(nameAux == NULL || errno == ENOMEM){
-            free(nameAux); //Lo pongo para testear cambiando el valor de errno (El caso que errno sea ENOMEM, pero nameAux no es NULL)
-            // errno test
             return -1;
         }
         strcpy(nameAux, name);
         
         tStation * aux =  realloc(ADT->vecStations,(ADT->stationQty+1) * sizeof(tStation));
         if(aux == NULL || errno == ENOMEM){
-            free(aux); //testeo
             free(nameAux);
             return -1;
         }
 
-        //Cuando ya se hizo el realloc del vector, igualamos el puntero dentro del mismo a los aux
+        //Cuando ya se hizo el realloc del vector, igualamos los campos primeros, y despues el vector a aux
         aux[ADT->stationQty].nameLen = nameLenAux;
         aux[ADT->stationQty].name = nameAux;
         aux[ADT->stationQty].stationId = id;
@@ -397,7 +393,6 @@ char * getNameQ1(bikeRentingADT ADT){
     }
     char * aux = malloc(ADT->vecStations[ADT->iterators.q1_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
-        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->vecStations[ADT->iterators.q1_i].name);
@@ -468,7 +463,6 @@ char * getNameOfDestinationQ2(bikeRentingADT ADT){
     }
     char * aux = malloc(ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
-        free(aux); // errno test
        return NULL;
     }
     return strcpy(aux, ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].name);
@@ -482,7 +476,6 @@ char * getNameOfStartQ2(bikeRentingADT ADT){
     }
     char * aux = malloc(ADT->matrix[ADT->iterators.q2_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
-        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->matrix[ADT->iterators.q2_i].name);
@@ -516,7 +509,6 @@ char * getNameQ3(bikeRentingADT ADT){
     }
     char * aux = malloc(ADT->vecStations[ADT->iterators.q3_i].nameLen + 1);
     if(aux == NULL || errno == ENOMEM){
-        free(aux); //errno test
         return NULL;
     }
     return strcpy(aux, ADT->vecStations[ADT->iterators.q3_i].name);
