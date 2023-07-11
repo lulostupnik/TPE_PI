@@ -22,8 +22,6 @@ typedef struct matrix{
    size_t nameLen;
 }tMatrix;
 
-
-
 typedef struct station{
     char * stationName;
     size_t nameLen;
@@ -275,9 +273,8 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
 
         tMatrix * aux;
        
-        aux = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
+        aux = realloc(ADT->matriz,ADT->stationQty * sizeof(tMatrix));
         if(aux == NULL || errno == ENOMEM){                    // si me quedo sin memoria libero lo ya reallocado.
-            free(aux); // errno test
             return -1;
         }
         
