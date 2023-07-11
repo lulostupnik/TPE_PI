@@ -19,5 +19,7 @@ debug: all
 deleteQueries:
 	rm -rf $(QUERIES)
 
-clean:
+deleteExecutables:
 	rm -rf $(EXECUTABLE_MON) $(EXECUTABLE_NYC)
+	
+clean: deleteQueries deleteExecutables
