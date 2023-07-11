@@ -31,94 +31,87 @@ int main(int argc, char * argv[]){
          exitCode=WRONG_AMOUNT_OF_ARGUMENTS; 
          handleErrors(exitCode,"Cantidad erronea de argumentos",NULL);
     }
-
-// CREO EL TAD //
-bikeRentingADT TAD = newBikesRenting();
-
-// VERIFICO QUE SE CREO CORRECTAMENTE
+    // CREO EL TAD //
+    bikeRentingADT TAD = newBikesRenting();
+    // VERIFICO QUE SE CREO CORRECTAMENTE
     if(TAD == NULL || errno == ENOMEM){
         exitCode=NO_MEM;
         handleErrors(exitCode,"Error al crear el ADT",TAD);
     }
 
-// APERTURA DE LOS ARCHIVOS 
+    // APERTURA DE LOS ARCHIVOS 
     FILE * dataStations = fopen(argv[2],"r"); 
-        if(dataStations == NULL){
-            exitCode=WRONG_PATH;
-            handleErrors(exitCode,"Archivo no encontrado",TAD);
-        }
+    if(dataStations == NULL){
+        exitCode=WRONG_PATH;
+        handleErrors(exitCode,"Archivo no encontrado",TAD);
+    }
     FILE * dataBikes = fopen(argv[1],"r"); 
-        if(dataBikes == NULL){
-            fclose(dataStations);
-            exitCode=WRONG_PATH;
-            handleErrors(exitCode,"Archivo no encontrado",TAD);
+    if(dataBikes == NULL){
+        fclose(dataStations);
+        exitCode=WRONG_PATH;
+        handleErrors(exitCode,"Archivo no encontrado",TAD);
     }
     FILE * CSVquery1 = fopen("query1.csv","w"); 
-        if(CSVquery1 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
+    if(CSVquery1 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
     htmlTable HTquery1 = newTable("query1.html", 2, "Station", "StartedTrips"); 
-        if(HTquery1 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            fclose(CSVquery1);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
+    if(HTquery1 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        fclose(CSVquery1);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
 
     FILE * CSVquery2 = fopen("query2.csv", "w"); 
-        if(CSVquery2 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            fclose(CSVquery1);
-            closeHTMLTable(HTquery1);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
+    if(CSVquery2 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        fclose(CSVquery1);
+        closeHTMLTable(HTquery1);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
     htmlTable HTquery2 = newTable("query2.html", 4, "StationA","StationB","Trips A->B", "Trips B->A" );
-        if(HTquery2 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            fclose(CSVquery1);
-            fclose(CSVquery2);
-            closeHTMLTable(HTquery1);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
+    if(HTquery2 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        fclose(CSVquery1);
+        fclose(CSVquery2);
+        closeHTMLTable(HTquery1);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
 
     FILE * CSVquery3 = fopen("query3.csv", "w");
-        if(CSVquery3 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            fclose(CSVquery1);
-            fclose(CSVquery2);
-            closeHTMLTable(HTquery1);
-            closeHTMLTable(HTquery2);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
+    if(CSVquery3 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        fclose(CSVquery1);
+        fclose(CSVquery2);
+        closeHTMLTable(HTquery1);
+        closeHTMLTable(HTquery2);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
     htmlTable HTquery3 = newTable("query3.html", 13, "J","F","M","A","M","J","J","A","S","O","N","D","Station");
-        if(HTquery3 == NULL){
-            fclose(dataBikes);
-            fclose(dataStations);
-            fclose(CSVquery1);
-            fclose(CSVquery2);
-            fclose(CSVquery3);
-            closeHTMLTable(HTquery1);
-            closeHTMLTable(HTquery2);
-            exitCode=NOT_CREATED;
-            handleErrors(exitCode,"No se pudo crear el archivo",TAD);
-        }
-
-
-
-// CARGO LA DATA DE STATIONS Y DE BIKES EN EL ADT  
-
+    if(HTquery3 == NULL){
+        fclose(dataBikes);
+        fclose(dataStations);
+        fclose(CSVquery1);
+        fclose(CSVquery2);
+        fclose(CSVquery3);
+        closeHTMLTable(HTquery1);
+        closeHTMLTable(HTquery2);
+        exitCode=NOT_CREATED;
+        handleErrors(exitCode,"No se pudo crear el archivo",TAD);
+    }
+    // CARGO LA DATA DE STATIONS Y DE BIKES EN EL ADT  
     exitCode=readDataStations(dataStations,TAD);
-    
     if(exitCode == NO_MEM){
         fclose(dataBikes);
         fclose(dataStations);
@@ -130,9 +123,7 @@ bikeRentingADT TAD = newBikesRenting();
         closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al leer y procesar los datos",TAD);
     }
-
     exitCode=readDataBikes(dataBikes,TAD);
-   
     if(exitCode==NO_MEM){
         fclose(dataBikes);
         fclose(dataStations);
@@ -144,11 +135,8 @@ bikeRentingADT TAD = newBikesRenting();
         closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al leer y procesar los datos",TAD);
     }
-
-// CARGO LOS QUERIES 
-
+    // CARGO LOS QUERIES 
     exitCode=loadQuery1(TAD, CSVquery1, HTquery1);
-
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
         fclose(dataBikes);
         fclose(dataStations);
@@ -160,9 +148,7 @@ bikeRentingADT TAD = newBikesRenting();
         closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al realizar el query1",TAD);
     }
-   
     exitCode=loadQuery2(TAD, CSVquery2, HTquery2);
-   
     if(exitCode == NO_MEM || exitCode == PRINT_ERROR ){
         fclose(dataBikes);
         fclose(dataStations);
@@ -174,8 +160,6 @@ bikeRentingADT TAD = newBikesRenting();
         closeHTMLTable(HTquery3);
         handleErrors(exitCode,"Error al realizar el query2",TAD);
     }    
-
-
     exitCode=loadQuery3(TAD, CSVquery3, HTquery3);
     fclose(dataBikes);
     fclose(dataStations);
@@ -374,3 +358,4 @@ void handleErrors(mainErrors exitCode, const char * Error,bikeRentingADT ADT){
     freeTad(ADT);
     exit(exitCode);
 }
+
