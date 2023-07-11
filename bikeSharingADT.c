@@ -21,6 +21,8 @@ typedef struct matrix{
    size_t nameLen;
 }tMatrix;
 
+
+
 typedef struct station{
     char * stationName;
     size_t nameLen;
@@ -100,25 +102,14 @@ static void  fillWithzeros(tMatrix * matriz, size_t dim,size_t * oldSize){
     for (size_t i = 0; i < *oldSize;i++){
         for (size_t j = *oldSize; j < dim;j++){
             matriz[i].Travels[j] = matriz[j].Travels[i] = aux;
-            // matriz[i].Travels[j].name = NULL;
-            // matriz[i].Travels[j].travelsFrom = 0;
-            // matriz[i].Travels[j].travelsTo = 0;
-            // matriz[i].Travels[j].nameLen = 0;
-            // matriz[j].Travels[i].name = NULL;
-            // matriz[j].Travels[i].travelsFrom = 0;
-            // matriz[j].Travels[i].travelsTo = 0;
-            // matriz[j].Travels[i].nameLen = 0;
         }
     }
+    
     for(size_t i=*oldSize;i<dim;i++){
         for(size_t j=*oldSize;j<dim;j++){
-            matriz[i].Travels[j].name = NULL;
-            matriz[i].Travels[j].travelsFrom = 0;
-            matriz[i].Travels[j].travelsTo = 0;
-            matriz[i].Travels[j].nameLen = 0;
+            matriz[i].Travels[j] = aux;
+        }
     }
-    }
-
 }
 
 static void matrizMalloc(tMatrix * matriz, size_t dim,int flag,size_t * oldSize){
@@ -126,15 +117,21 @@ if(flag == 1){
    for( size_t i = 0; i < dim; i++){
         matriz[i].Travels=calloc(dim,sizeof(tDestino));
         matriz[i].name = NULL;
+        
     }
 }else{
-        for( size_t i=0; i < dim; i++){
+    tMatrix aux = {NULL, NULL, 0};
+    for(int i=*oldSize;i<dim;i++){
+        matriz[i] = aux;
+    }
+    for( size_t i=0; i < dim; i++){
         matriz[i].Travels=realloc(matriz[i].Travels,dim * sizeof(tDestino));
-        }
-        fillWithzeros(matriz,dim,oldSize);
     }
+    fillWithzeros(matriz,dim,oldSize);
+}
     (*oldSize)=dim;
-    }
+}
+
 
 static int  binarySearch(vec vec, int min, int max, size_t Id) {
      if (min > max){
@@ -215,40 +212,53 @@ bikeRentingADT newBikesRenting(void){
    return calloc(1, sizeof(tBikeRentingCDT));
 }
 
-void addStation(char *name,size_t id,bikeRentingADT ADT) {
-    ADT->firstRead=1;
-    ADT->order = UNORDERED;
-    if(SearchForRepeated(ADT->Stations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega                   
-        ADT->Stations = realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation)); 
-        ADT->Stations[ADT->stationQty].nameLen = strlen(name);
-        ADT->Stations[ADT->stationQty].stationName = malloc(ADT->Stations[ADT->stationQty].nameLen + 1); // ver si hacer f aux
-        strcpy(ADT->Stations[ADT->stationQty].stationName, name);
-        ADT->Stations[ADT->stationQty].stationId = id;
-        startMonthsInZero(ADT->Stations[ADT->stationQty].Months);
-        ADT->Stations[ADT->stationQty].travelsByMembers = 0;
+int addStation(char *name,size_t id,bikeRentingADT ADT) {
+    if(SearchForRepeated(ADT->Stations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega       
+        size_t nameLenAux = strlen(name);
+        char * nameAux = malloc(nameLenAux + 1);
+        if(nameAux == NULL || errno == ENOMEM){
+            return -1;
+        }
+        strcpy(nameAux, name);
+
+        vec aux =  realloc(ADT->Stations,(ADT->stationQty+1) * sizeof(tStation));
+        if(aux == NULL || errno == ENOMEM){
+            free(nameAux);
+            return -1;
+        }
+
+        //Cuando ya se hizo el realloc del vector, igualamos el puntero dentro del mismo a los aux
+        aux[ADT->stationQty].nameLen = nameLenAux;
+        aux[ADT->stationQty].stationName = nameAux;
+        aux[ADT->stationQty].stationId = id;
+        startMonthsInZero(aux[ADT->stationQty].Months);
+        aux[ADT->stationQty].travelsByMembers = 0;
+        
+        ADT->Stations = aux;
         ADT->stationQty++;
+        
+        //Seteo el flag del adt
+        ADT->firstRead=1;
+        ADT->order = UNORDERED;
+        return 0;
     }
+    return 1;
 }
 
-void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
+int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
     int flag;
     if(ADT->order != ID){
          orderByids(ADT);
     }
     int newIdStart = binarySearch(ADT->Stations,0,ADT->stationQty-1,idStart);
     int newIdEnd  = binarySearch(ADT->Stations,0,ADT->stationQty-1,idEnd);
-    if( newIdEnd == -1 || newIdStart == -1 ) {
-        return;
+    //Si alguno de las dos estaciones no existe, no agregamos el viaje.
+    if( newIdEnd == -1 || newIdStart == -1 || month < 1 || month > 12) {
+        return 1;
     }
 
     if( ADT->firstRead == 1){
-        // if(ADT->matriz == NULL){
-        //     flag=1;
-        //     }else{
-        //     flag=0;
-        //     }
         flag = (ADT->matriz == NULL); 
-        
         ADT->matriz = realloc( ADT->matriz,ADT->stationQty * sizeof(tMatrix));
         matrizMalloc(ADT->matriz,ADT->stationQty,flag,&(ADT->oldSizeOfMatriz));
         ADT->firstRead = 0;
@@ -260,28 +270,28 @@ void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t
     
     ADT->Stations[newIdStart].Months[month-1]++;;
 
-    if( newIdEnd == newIdStart){
-        return;
-    }
-    char * nameEnd = ADT->Stations[newIdEnd].stationName;
-    char * nameStart = ADT->Stations[newIdStart].stationName;
-    if( ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo==0 && ADT->matriz[newIdStart].Travels[newIdEnd].travelsFrom == 0){
-        
-        //Lo guardo dentro de la matriz, para ver las llegadas
-        ADT->matriz[newIdStart].Travels[newIdEnd].name=nameEnd;
-        ADT->matriz[newIdStart].Travels[newIdEnd].nameLen=ADT->Stations[newIdEnd].nameLen;
+    if( newIdEnd != newIdStart){ //Solo agrego el viaje a la matriz si no es un viaje circular
+        char * nameEnd = ADT->Stations[newIdEnd].stationName;
+        char * nameStart = ADT->Stations[newIdStart].stationName;
+        if( ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo==0 && ADT->matriz[newIdStart].Travels[newIdEnd].travelsFrom == 0){
+            
+            //Lo guardo dentro de la matriz, para ver las llegadas
+            ADT->matriz[newIdStart].Travels[newIdEnd].name=nameEnd;
+            ADT->matriz[newIdStart].Travels[newIdEnd].nameLen=ADT->Stations[newIdEnd].nameLen;
 
-        ADT->matriz[newIdEnd].Travels[newIdStart].nameLen=ADT->Stations[newIdStart].nameLen;
-        ADT->matriz[newIdEnd].Travels[newIdStart].name = nameStart;
-        
-        //Lo guardamos en las "filas", para cuando itero en la estacion A (A--> todas las que llega)
-        ADT->matriz[newIdStart].name=nameStart;
-        ADT->matriz[newIdEnd].name = nameEnd;
-        ADT->matriz[newIdStart].nameLen =ADT->Stations[newIdStart].nameLen;
-        ADT->matriz[newIdEnd].nameLen =ADT->Stations[newIdEnd].nameLen;
+            ADT->matriz[newIdEnd].Travels[newIdStart].nameLen=ADT->Stations[newIdStart].nameLen;
+            ADT->matriz[newIdEnd].Travels[newIdStart].name = nameStart;
+            
+            //Lo guardamos en las "filas", para cuando itero en la estacion A (A--> todas las que llega)
+            ADT->matriz[newIdStart].name=nameStart;
+            ADT->matriz[newIdEnd].name = nameEnd;
+            ADT->matriz[newIdStart].nameLen =ADT->Stations[newIdStart].nameLen;
+            ADT->matriz[newIdEnd].nameLen =ADT->Stations[newIdEnd].nameLen;
+        }
+        ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo++;
+        ADT->matriz[newIdEnd].Travels[newIdStart].travelsFrom++;
     }
-    ADT->matriz[newIdStart].Travels[newIdEnd].travelsTo++;
-    ADT->matriz[newIdEnd].Travels[newIdStart].travelsFrom++;
+    return 0;
 }
 
 

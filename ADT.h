@@ -33,8 +33,16 @@ void toBeginQ3(bikeRentingADT ADT);
 void nextQ3(bikeRentingADT ADT);
 
 
-void addStation(char * name,size_t id,bikeRentingADT ADT);
-void processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd);
+
+/*
+** Devuelve 0 si se agrego la estacion, -1 si no se agrego la estacion por falta de memoria (setea errno en enomem), y 1 si no agrego la estacion porque ya habia una con ese ID.
+*/
+int addStation(char * name,size_t id,bikeRentingADT ADT);
+
+/*
+** Devuelve 1 no se proceso la informacion por paramtros invalidos (month, idStart, idEnd)
+*/
+int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd);
 
 size_t getNumberOfStations(bikeRentingADT ADT);
 
