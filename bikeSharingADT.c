@@ -270,6 +270,9 @@ size_t getNumberOfStations(bikeRentingADT ADT){
 
 int addStation(bikeRentingADT ADT, char *name,size_t id) {
     errno = 0;
+    if(name == NULL){
+        return 1;
+    }
     if(searchRepeatedId(ADT->vecStations,ADT->stationQty,id) == -1){   // si no encuentra la estacion la agrega       
         size_t nameLenAux = strlen(name);
         char * nameAux = malloc(nameLenAux + 1);
@@ -305,6 +308,7 @@ int addStation(bikeRentingADT ADT, char *name,size_t id) {
 int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t idEnd){
     errno = 0;
     if(ADT->order != ID){
+        //Para hacer el binarySearch necesito que este ordenado el vector de estaciones por ID, asi que lo ordeno de esa manera si no lo esta 
          orderByids(ADT);
     }
     int idxStart = binarySearch(ADT->vecStations,0,ADT->stationQty-1,idStart); //Guarda en idxStart el indice del vector en donde se encuentra el ID enviado (idStart).
@@ -314,10 +318,10 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
         return 1;
     }
 
-    if( ADT->firstRead == 1){
+    if( ADT->firstRead == 1){ //Entra a este IF siempre que es la primera vez que se llama a processData despues de haber llamado a addStation 
         tRows * aux;
         aux = realloc(ADT->matrix,ADT->stationQty * sizeof(tRows));
-        if(aux == NULL || errno == ENOMEM){                    // si me quedo sin memoria libero lo ya reallocado.
+        if(aux == NULL || errno == ENOMEM){                         // si me quedo sin memoria, el main puede decidir liberar los recursos con freeTad o no. No es necesario liberar ahora
             return -1;
         }
 
@@ -332,11 +336,11 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
             return -1;
         }
         ADT->matrix=aux;
-        ADT->firstRead = 0;
+        ADT->firstRead = 0; // Apago el flag
     }
  
     if(isMember){
-        ADT->vecStations[idxStart].tripsByMembers++;
+        ADT->vecStations[idxStart].tripsByMembers++; 
     }
     
     ADT->vecStations[idxStart].monthsVec[month-1]++;;
@@ -444,13 +448,13 @@ int hasNextDestinationQ2(bikeRentingADT ADT){
 
 size_t getTripsToQ2(bikeRentingADT ADT){
     if(!hasNextStartQ2(ADT) || !hasNextDestinationQ2(ADT)){
-        return -1;
+        return -1; //devuelvo basura
     }
     return ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].tripsTo;
 }
 size_t getTripsFromQ2(bikeRentingADT ADT){
     if(!hasNextStartQ2(ADT) || !hasNextDestinationQ2(ADT)){
-        return -1;
+        return -1;//devuelvo basura
     }
     return ADT->matrix[ADT->iterators.q2_i].cols[ADT->iterators.q2_j].tripsFrom;
 }
@@ -536,5 +540,6 @@ void freeTad(bikeRentingADT ADT) {
         }
         free(ADT->matrix);
         free(ADT->vecStations);
-        free(ADT);}
+        free(ADT);
+    }
 }
