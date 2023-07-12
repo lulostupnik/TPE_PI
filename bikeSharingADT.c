@@ -15,6 +15,7 @@ typedef struct cols{
     size_t nameLen;                 // Longitud del nombre de la estacion de llegada
     size_t tripsTo;                 // Viajes hacia la estacion de llegada (desde la de salida)
     size_t tripsFrom;               // Viajes desde la estacion de llegada (hacia la de salida)
+    size_t stationId;             
 }tCols;
 
 /*
@@ -24,6 +25,7 @@ typedef struct rows{
    tCols * cols;                     // "Vector" de estaciones de llegada. 
    char * name;                     // Nombre de la Estacion de Salida (La Fila)
    size_t nameLen;                  // Longitud del nombre de la estacion de Salida 
+   size_t stationId;                 
 }tRows;
 
 /*
@@ -244,17 +246,35 @@ static int compare_cols(const void *a, const void *b){
 static int compare_matrix(const void *a, const void *b){
     const tRows *station1 = (const tRows *)a;
     const tRows *station2 = (const tRows *)b;
-    if(station1->name== NULL){
+    if(station1->name == NULL){
         return 1;
     }
-    if(station2->name== NULL){
+    if(station2->name == NULL){
         return -1;
     }
     return strcasecmp(station1->name,station2->name);
 }
+static int cols_byIds(const void *a, const void *b){
+    const tRows *station1 = (const tRows *)a;
+    const tRows *station2 = (const tRows *)b;
+    
+    return station1->stationId - station2->stationId;
+}
+
+static int matrix_byIds(const void *a, const void *b){
+    const tRows *station1 = (const tRows *)a;
+    const tRows *station2 = (const tRows *)b;
+   
+    return station1->stationId - station2->stationId;
+}
+
 
 void orderByids(bikeRentingADT ADT){
-    qsort(ADT->vecStations,ADT->stationQty,sizeof(tStation),compare_ids); //Ordena el vector de estaciones por ID
+    qsort(ADT->vecStations,ADT->stationQty,sizeof(tStation),compare_ids);
+    qsort(ADT->matrix,ADT->oldSizeOfmatrix,sizeof(tRows),matrix_byIds); //Ordena las filas de la matriz por orden alfabetico
+       for( size_t i = 0; i < ADT->oldSizeOfmatrix; i++){
+        qsort(ADT->matrix[i].cols,ADT->oldSizeOfmatrix,sizeof(tCols),cols_byIds);  //Ordena las columnas de la matriz por orden alfabetico
+        } //Ordena el vector de estaciones por ID
     ADT->order = ID; //Informa que ahora el vector de estaciones esta ordenado por ID. 
 }
 
@@ -351,17 +371,20 @@ int processData(bikeRentingADT ADT,int month,int isMember,size_t idStart,size_t 
         if( ADT->matrix[idxStart].cols[idxEnd].tripsTo==0 && ADT->matrix[idxStart].cols[idxEnd].tripsFrom == 0){
             
             //Lo guardo dentro de la matrix, para ver las llegadas
+            ADT->matrix[idxStart].stationId=idStart;
+            ADT->matrix[idxStart].cols[idxEnd].stationId=idEnd;
             ADT->matrix[idxStart].cols[idxEnd].name=nameEnd;
             ADT->matrix[idxStart].cols[idxEnd].nameLen=ADT->vecStations[idxEnd].nameLen;
 
             ADT->matrix[idxEnd].cols[idxStart].nameLen=ADT->vecStations[idxStart].nameLen;
             ADT->matrix[idxEnd].cols[idxStart].name = nameStart;
-            
+            ADT->matrix[idxEnd].cols[idxStart].stationId = idStart;
             //Lo guardamos en las "filas", para cuando itero en la estacion A (A--> todas las que llega)
-            ADT->matrix[idxStart].name=nameStart;
+            ADT->matrix[idxStart].name = nameStart;
             ADT->matrix[idxEnd].name = nameEnd;
-            ADT->matrix[idxStart].nameLen =ADT->vecStations[idxStart].nameLen;
-            ADT->matrix[idxEnd].nameLen =ADT->vecStations[idxEnd].nameLen;
+            ADT->matrix[idxEnd].stationId = idEnd;
+            ADT->matrix[idxStart].nameLen = ADT->vecStations[idxStart].nameLen;
+            ADT->matrix[idxEnd].nameLen = ADT->vecStations[idxEnd].nameLen;
         }
         ADT->matrix[idxStart].cols[idxEnd].tripsTo++;
         ADT->matrix[idxEnd].cols[idxStart].tripsFrom++;
